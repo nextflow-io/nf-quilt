@@ -6,7 +6,7 @@ Nextflow plugin for interacting with [Quilt](https://quiltdata.com/) packages.
 
 ## Getting Started
 
-To use the `nf-quilt` plugin, you need Nextflow 22.04 (or later) and Python 3.7 (or later).
+To add the `nf-quilt` plugin to your workflow, you need Nextflow 22.04 (or later) and Python 3.7 (or later).
 
 Install the [quilt-cli](./quilt-cli) Python package:
 ```bash
