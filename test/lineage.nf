@@ -8,14 +8,14 @@ params.output = 'nf-quilt/output'
 
 process download {
   output:
-    stdout
+    path 'input/*'
 
   """
-  printf '${params}'
+  quilt3 install '${params.input}' --registry '${params.registry}' --dest input
   """
 }
 
 workflow {
-  download | view { it.trim() }
+  download | view // { it.trim() }
 }
 //  download | checksum | transform | upload | package | lineage
