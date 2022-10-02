@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Google Inc
+ * Copyright 2022, Quilt Data Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,13 @@
 
 package nextflow.quilt3.util
 
-import java.nio.file.Path
 import java.nio.file.FileSystem
+import java.nio.file.FileStore
+import java.nio.file.Path
+import java.nio.file.PathMatcher
+import java.nio.file.WatchService
+import java.nio.file.attribute.UserPrincipalLookupService
+import java.nio.file.spi.FileSystemProvider;
 
 import groovy.transform.CompileStatic
 import nextflow.Global
@@ -51,6 +56,78 @@ public final class QuiltFileSystem extends FileSystem {
 
     public QuiltPath getPath(String pkg_name, String path) {
       return new QuiltPath(this, pkg_name, path)
+    }
+
+    @Override
+    FileSystemProvider provider() {
+        return null
+    }
+
+    @Override
+    void close() throws IOException {
+        // nothing to do
+    }
+
+    @Override
+    boolean isOpen() {
+        return true
+    }
+
+    @Override
+    boolean isReadOnly() {
+        return false
+    }
+
+    @Override
+    String getSeparator() {
+        return QuiltPath.SEP
+    }
+
+    Iterable<? extends Path> getRootDirectories() {
+        throw new UnsupportedOperationException("Operation 'getRootDirectories' is not supported by QuiltFileSystem")
+    }
+
+    @Override
+    Iterable<FileStore> getFileStores() {
+        throw new UnsupportedOperationException("Operation 'getFileStores' is not supported by QuiltFileSystem")
+    }
+
+    @Override
+    Set<String> supportedFileAttributeViews() {
+        return Collections.unmodifiableSet( ['basic'] as Set )
+    }
+
+    @Override
+    QuiltPath getPath(String pkg_name, String... more) {
+        final String path = more.join(QuiltPath.SEP)
+        return new QuiltPath(this, pkg_name, path)
+    }
+
+    protected String toUriString(Path path) {
+        return path instanceof QuiltPath ? ((QuiltPath)path).toUriString() : null
+    }
+
+    protected String getBashLib(Path path) {
+        return path instanceof QuiltPath ? QuiltBashLib.script() : null
+    }
+
+    protected String getUploadCmd(String source, Path target) {
+        return target instanceof QuiltPath ?  QuiltFileCopyStrategy.uploadCmd(source, target) : null
+    }
+
+    @Override
+    PathMatcher getPathMatcher(String syntaxAndPattern) {
+        throw new UnsupportedOperationException("Operation 'getPathMatcher' is not supported by QuiltFileSystem")
+    }
+
+    @Override
+    UserPrincipalLookupService getUserPrincipalLookupService() {
+        throw new UnsupportedOperationException("Operation 'getUserPrincipalLookupService' is not supported by QuiltFileSystem")
+    }
+
+    @Override
+    WatchService newWatchService() throws IOException {
+        throw new UnsupportedOperationException("Operation 'newWatchService' is not supported by QuiltFileSystem")
     }
 
 }

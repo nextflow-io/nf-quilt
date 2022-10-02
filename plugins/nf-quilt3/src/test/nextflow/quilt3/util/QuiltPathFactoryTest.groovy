@@ -17,34 +17,35 @@
 
 package nextflow.quilt3.util
 
-import java.nio.file.Path
-import java.nio.file.Paths
-
 import nextflow.Global
 import nextflow.Session
-import nextflow.util.KryoHelper
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
-class QuiltPathSerializerTest extends Specification {
+class QuiltPathFactoryTest extends Specification {
 
-    def 'should serialize a google cloud path'() {
+    @Unroll
+    def 'should create quilt path #PATH' () {
         given:
         Global.session = Mock(Session) {
-            getConfig() >> [google:[project:'foo', region:'x']]
+            getConfig() >> [quilt:[project:'foo', region:'x']]
         }
+        and:
+        def factory = new QuiltPathFactory()
 
-        when:
-        def uri = URI.create("quilt://my-seq/data/ggal/sample.fq")
-        def path = Paths.get(uri)
-        def buffer = KryoHelper.serialize(path)
-        def copy = (Path)KryoHelper.deserialize(buffer)
-        then:
-        copy instanceof CloudStoragePath
-        copy.toUri() == uri
-        copy.toUriString() == "quilt://my-seq/data/ggal/sample.fq"
+        expect:
+        factory.parseUri(PATH).toUriString() == PATH
+        factory.parseUri(PATH).toString() == STR
+
+        where:
+        _ | PATH                | STR
+        _ | 'quilt://foo'          | ''
+        _ | 'quilt://foo/bar'      | '/bar'
+        _ | 'quilt://foo/bar/'     | '/bar/'   // <-- bug or feature ?
     }
+
 }

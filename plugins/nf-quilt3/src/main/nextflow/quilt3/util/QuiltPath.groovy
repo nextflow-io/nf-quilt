@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Google Inc
+ * Copyright 2022, Quilt Data Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import nextflow.quilt3.QuiltOpts
 
 // cf. https://cloud.google.com/java/docs/reference/google-cloud-nio/latest/com.google.cloud.storage.contrib.nio.CloudStoragePath
 public final class QuiltPath implements Path {
-    final public String SEP = '/'
+    final public static String SEP = '/'
 
     protected QuiltFileSystem filesystem
     protected String pkg_name

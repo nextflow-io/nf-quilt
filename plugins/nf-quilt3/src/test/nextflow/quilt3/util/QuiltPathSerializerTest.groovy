@@ -15,43 +15,36 @@
  * limitations under the License.
  */
 
-package nextflow.extension
-
-import spock.lang.Specification
-import spock.lang.Unroll
+package nextflow.quilt3.util
 
 import java.nio.file.Path
+import java.nio.file.Paths
 
 import nextflow.Global
 import nextflow.Session
+import nextflow.util.KryoHelper
+import spock.lang.Specification
 
 /**
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
-class FilesExTest2 extends Specification {
+class QuiltPathSerializerTest extends Specification {
 
-    @Unroll
-    def 'should return uri string for #PATH' () {
+    def 'should serialize a google cloud path'() {
         given:
         Global.session = Mock(Session) {
-            getConfig() >> [google:[project:'foo', region:'x']]
+            getConfig() >> [quilt:[project:'foo', region:'x']]
         }
 
         when:
-        def path = PATH as Path
+        def uri = URI.create("quilt://bucket/user/pkg/sample.fq")
+        def path = Paths.get(uri)
+        def buffer = KryoHelper.serialize(path)
+        def copy = (Path)KryoHelper.deserialize(buffer)
         then:
-        path instanceof CloudStoragePath
-        println FilesEx.toUriString(path)
-        FilesEx.toUriString(path) == PATH
-
-        where:
-        PATH                    | _
-        'quilt://foo/bar'          | _
-        'quilt://foo'              | _
-        'quilt://foo/'             | _
-        'quilt://foo/bar/baz'      | _
-        'quilt://foo/bar/baz/'     | _
-        'quilt://foo/bar - baz/'   | _
+        copy instanceof QuiltPath
+        copy.toUri() == uri
+        copy.toUriString() == "quilt://my-seq/data/ggal/sample.fq"
     }
 }

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3
+package nextflow.quilt3.util
 
 import java.nio.file.Paths
 
@@ -70,10 +70,9 @@ abstract class QuiltSpecification extends Specification {
         return result
     }
 
-
-    static CloudStoragePath gsPath(String path) {
+    static QuiltPath quiltPath(String path) {
         assert path.startsWith('quilt://')
-        (CloudStoragePath) Paths.get( new URI(null,null,path,null,null))
+        (QuiltPath) Paths.get( new URI(null,null,path,null,null))
     }
 
 }

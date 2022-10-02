@@ -1,5 +1,5 @@
 /*
- * Copyright 2019, Google Inc
+ * Copyright 2022, Quilt Data Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,4 +58,13 @@ class QuiltPathFactory extends FileSystemPathFactory {
       }
       return null
     }
+
+    protected String getBashLib(Path path) {
+        return path instanceof QuiltPath ? QuiltBashLib.script() : null
+    }
+
+    protected String getUploadCmd(String source, Path target) {
+        return target instanceof QuiltPath ?  QuiltFileCopyStrategy.uploadCmd(source, target) : null
+    }
+
 }
