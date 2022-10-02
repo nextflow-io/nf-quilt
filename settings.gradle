@@ -17,3 +17,4 @@
 rootProject.name = 'nf-quilt'
 include 'plugins'
 include('plugins:nf-quilt')
+include('plugins:nf-quilt3')
