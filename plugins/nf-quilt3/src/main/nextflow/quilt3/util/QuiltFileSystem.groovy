@@ -45,22 +45,28 @@ public final class QuiltFileSystem extends FileSystem {
     public static final String URI_SCHEME = "quilt"
 
     public final String registry;
+    protected final QuiltFileSystemProvider provider
 
-    public static QuiltFileSystem forBucket(String registry) {
-      return new QuiltFileSystem(registry);
-    }
-
-    public QuiltFileSystem(String registry) {
+    public QuiltFileSystem(String registry, QuiltFileSystemProvider provider) {
       this.registry = registry;
+      this.provider = provider;
     }
 
     public QuiltPath getPath(String pkg_name, String path) {
       return new QuiltPath(this, pkg_name, path)
     }
 
+    void copy(QuiltPath source, QuiltPath target) {
+      throw new UnsupportedOperationException("Operation 'copy' is not supported by QuiltFileSystem")
+    }
+
+    void delete(QuiltPath path) {
+      throw new UnsupportedOperationException("Operation 'delete' is not supported by QuiltFileSystem")
+    }
+
     @Override
     FileSystemProvider provider() {
-        return null
+        return provider
     }
 
     @Override

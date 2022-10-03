@@ -40,12 +40,12 @@ import nextflow.quilt3.QuiltOpts
 public final class QuiltPath implements Path {
     final public static String SEP = '/'
 
-    protected QuiltFileSystem filesystem
+    public QuiltFileSystem filesystem
     protected String pkg_name
     protected String path
     private String[] names
 
-    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String path) {
+    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String path=null) {
         this.filesystem = filesystem
         this.pkg_name = pkg_name
         this.names = path.split(SEP)

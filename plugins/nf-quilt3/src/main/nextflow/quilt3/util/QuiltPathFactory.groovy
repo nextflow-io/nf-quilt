@@ -23,6 +23,7 @@ import nextflow.Global
 import nextflow.Session
 import nextflow.quilt3.QuiltOpts
 import nextflow.file.FileSystemPathFactory
+import nextflow.file.FileHelper;
 /**
  * Implements FileSystemPathFactory interface for Google storage
  *
@@ -32,23 +33,11 @@ import nextflow.file.FileSystemPathFactory
 class QuiltPathFactory extends FileSystemPathFactory {
 
     @Override
-    protected Path parseUri(String uri) {
-      if( !uri.startsWith('quilt://') )
-          return null
-      final body = uri.substring(8)
-      final reg_split = body.indexOf('/')
-      if( reg_split==-1 )
-          return null
-
-      final registry = body.substring(0,reg_split)
-      final pkg_path = body.substring(reg_split)
-      final pkg_split = pkg_path.indexOf('/', pkg_path.indexOf("/") + 1)
-      if( pkg_split==-1 )
-          return null
-
-      final pkg_name = pkg_path.substring(0,pkg_split)
-      final path = pkg_path.substring(pkg_split)
-      return QuiltFileSystem.forBucket(registry).getPath(pkg_name, path)
+    protected Path parseUri(String uri_string) {
+        if( !uri_string.startsWith('quilt://') )
+            return null
+        final uri = new URI(uri_string)
+        return FileHelper.getOrCreateFileSystemFor(uri).provider().getPath(uri)
     }
 
     @Override

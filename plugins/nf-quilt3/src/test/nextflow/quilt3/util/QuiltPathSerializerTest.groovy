@@ -22,7 +22,6 @@ import java.nio.file.Paths
 
 import nextflow.Global
 import nextflow.Session
-import nextflow.util.KryoHelper
 import spock.lang.Specification
 
 /**
@@ -31,7 +30,7 @@ import spock.lang.Specification
  */
 class QuiltPathSerializerTest extends Specification {
 
-    def 'should serialize a google cloud path'() {
+    def 'should serialize a Quilt path'() {
         given:
         Global.session = Mock(Session) {
             getConfig() >> [quilt:[project:'foo', region:'x']]
@@ -40,8 +39,6 @@ class QuiltPathSerializerTest extends Specification {
         when:
         def uri = URI.create("quilt://bucket/user/pkg/sample.fq")
         def path = Paths.get(uri)
-        def buffer = KryoHelper.serialize(path)
-        def copy = (Path)KryoHelper.deserialize(buffer)
         then:
         copy instanceof QuiltPath
         copy.toUri() == uri

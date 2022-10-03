@@ -42,10 +42,8 @@ class QuiltPathFactoryTest extends Specification {
         factory.parseUri(PATH).toString() == STR
 
         where:
-        _ | PATH                | STR
-        _ | 'quilt://foo'          | ''
-        _ | 'quilt://foo/bar'      | '/bar'
-        _ | 'quilt://foo/bar/'     | '/bar/'   // <-- bug or feature ?
+        _ | PATH                             | STR
+        _ | 'quilt://reg/user/pkg/'          | ''
     }
 
 }
