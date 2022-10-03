@@ -26,11 +26,51 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.spi.FileSystemProvider
 
+import nextflow.plugin.Plugins
+import nextflow.plugin.TestPluginDescriptorFinder
+import nextflow.plugin.TestPluginManager
+import nextflow.plugin.extension.PluginExtensionProvider
+import org.pf4j.PluginDescriptorFinder
+import groovy.util.logging.Slf4j
+import spock.lang.Shared
+import spock.lang.Timeout
+
 /**
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
 abstract class QuiltSpecification extends Specification {
+
+    @Shared String pluginsMode
+
+    def setup() {
+        // reset previous instances
+        PluginExtensionProvider.reset()
+        // this need to be set *before* the plugin manager class is created
+        pluginsMode = System.getProperty('pf4j.mode')
+        System.setProperty('pf4j.mode', 'dev')
+        // the plugin root should
+        def root = Path.of('.').toAbsolutePath().normalize()
+        def manager = new TestPluginManager(root){
+            @Override
+            protected PluginDescriptorFinder createPluginDescriptorFinder() {
+                return new TestPluginDescriptorFinder(){
+                    @Override
+                    protected Path getManifestPath(Path pluginPath) {
+                        return pluginPath.resolve('src/resources/META-INF/MANIFEST.MF')
+                    }
+                }
+            }
+        }
+        Plugins.init(root, 'dev', manager)
+        Plugins.startIfMissing('nf-quilt3')
+    }
+
+    def cleanup() {
+        Plugins.stop()
+        PluginExtensionProvider.reset()
+        pluginsMode ? System.setProperty('pf4j.mode',pluginsMode) : System.clearProperty('pf4j.mode')
+    }
 
     protected Path mockQuiltPath(String path, boolean isDir=false) {
         assert path.startsWith('quilt://')

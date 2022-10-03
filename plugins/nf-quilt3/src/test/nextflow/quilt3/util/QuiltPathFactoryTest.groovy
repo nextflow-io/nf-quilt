@@ -26,7 +26,8 @@ import spock.lang.Unroll
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
-class QuiltPathFactoryTest extends Specification {
+
+class QuiltPathFactoryTest extends QuiltSpecification {
 
     @Unroll
     def 'should create quilt path #PATH' () {

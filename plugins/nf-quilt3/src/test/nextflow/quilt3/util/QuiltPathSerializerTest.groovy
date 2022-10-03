@@ -28,7 +28,7 @@ import spock.lang.Specification
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
-class QuiltPathSerializerTest extends Specification {
+class QuiltPathSerializerTest extends QuiltSpecification {
 
     def 'should serialize a Quilt path'() {
         given:
@@ -40,8 +40,8 @@ class QuiltPathSerializerTest extends Specification {
         def uri = URI.create("quilt://bucket/user/pkg/sample.fq")
         def path = Paths.get(uri)
         then:
-        copy instanceof QuiltPath
-        copy.toUri() == uri
-        copy.toUriString() == "quilt://my-seq/data/ggal/sample.fq"
+        path instanceof QuiltPath
+        path.toUri() == uri
+        path.toUriString() == "quilt://my-seq/data/ggal/sample.fq"
     }
 }
