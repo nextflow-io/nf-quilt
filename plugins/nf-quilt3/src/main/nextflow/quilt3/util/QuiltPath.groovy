@@ -26,6 +26,7 @@ import java.nio.file.WatchKey
 import java.nio.file.WatchService
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import nextflow.Global
 import nextflow.Session
 import nextflow.quilt3.QuiltOpts
@@ -34,9 +35,9 @@ import nextflow.quilt3.QuiltOpts
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
-@CompileStatic
 
-// cf. https://cloud.google.com/java/docs/reference/google-cloud-nio/latest/com.google.cloud.storage.contrib.nio.CloudStoragePath
+@Slf4j
+@CompileStatic
 public final class QuiltPath implements Path {
     final public static String SEP = '/'
 

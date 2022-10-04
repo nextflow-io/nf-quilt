@@ -306,9 +306,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-        checkRoot(dir)
-        final path = asQuiltPath(dir)
-        throw new IllegalArgumentException("Quilt file system does not support `createDirectory`")
+        log.info "Ignoring call to  `createDirectory`: ${dir}"
     }
 
     @Override
@@ -321,6 +319,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     void copy(Path from, Path to, CopyOption... options) throws IOException {
+        log.info "Attempting `copy`: ${from} -> ${to}"
         assert provider(from) == provider(to)
         if( from == to )
             return // nothing to do -- just return
@@ -356,7 +355,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     void checkAccess(Path path, AccessMode... modes) throws IOException {
         checkRoot(path)
-        throw new UnsupportedOperationException("Operation 'checkAccess' is not supported by QuiltFileSystem")
+        log.info "Ignoring call to  `checkAccess`: ${path}"
     }
 
     @Override
@@ -367,12 +366,12 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     def <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-      throw new UnsupportedOperationException("Operation 'readAttributes' is not supported by QuiltFileSystem")
+        log.info "Ignoring call to BasicFileAttributes `readAttributes`: ${path}"
     }
 
     @Override
     Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-        throw new UnsupportedOperationException("Operation 'readAttributes' is not supported by QuiltFileSystem")
+        log.info "Ignoring call to Map `readAttributes`: ${path}"
     }
 
     @Override
