@@ -48,7 +48,7 @@ public final class QuiltPath implements Path {
     public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String filepath, Map<String,Object> options) {
         this.filesystem = filesystem
         this.pkg_name = pkg_name
-        this.names = filepath.split(SEP)
+        this.names = filepath ? filepath.split(SEP) : new String[0]
         this.options = options
     }
 
