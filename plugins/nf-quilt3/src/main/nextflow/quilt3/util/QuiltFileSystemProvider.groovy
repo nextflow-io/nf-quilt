@@ -45,7 +45,7 @@ import groovy.util.logging.Slf4j
 /**
  * Implements NIO File system provider for Quilt Blob Storage
  *
- * @author Paolo Di Tommaso <paolo.ditommaso@gmail.com>
+ * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
 
 
