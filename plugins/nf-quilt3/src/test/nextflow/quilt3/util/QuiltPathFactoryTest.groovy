@@ -61,7 +61,7 @@ class QuiltPathFactoryTest extends QuiltSpecification {
 
         where:
         _ | PATH                             | STR
-        _ | 'quilt://reg/user/pkg/'          | ''
+        _ | 'quilt://reg/user/pkg/'          | 'quilt://reg/user/pkg/'  
     }
 
 }

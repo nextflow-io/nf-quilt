@@ -256,7 +256,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
         final String pkg_name = path.substring(0,pkg_split)
         final String filepath = path.substring(pkg_split+1)
-        final opts = parseQuery(query)
+        final opts = query ? parseQuery(query) : null
         return new QuiltPath(fs, pkg_name, filepath, opts)
     }
 
