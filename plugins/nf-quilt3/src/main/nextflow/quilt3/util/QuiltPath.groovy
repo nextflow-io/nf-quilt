@@ -43,11 +43,13 @@ public final class QuiltPath implements Path {
     private QuiltFileSystem filesystem
     private String pkg_name
     private String[] names
+    private Map<String,Object> options
 
-    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String filepath=null) {
+    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String filepath, Map<String,Object> options) {
         this.filesystem = filesystem
         this.pkg_name = pkg_name
         this.names = filepath.split(SEP)
+        this.options = options
     }
 
     public String registry() {
@@ -60,6 +62,10 @@ public final class QuiltPath implements Path {
 
     public String filepath() {
         return names.join(SEP)
+    }
+
+    public Object option(key) {
+        return options ? options[key] : null
     }
 
     @Override
@@ -77,7 +83,7 @@ public final class QuiltPath implements Path {
     }
 
     Path getPackage() {
-        isPackage() ? this : new QuiltPath(filesystem, pkg_name, "")
+        isPackage() ? this : new QuiltPath(filesystem, pkg_name, "", null)
     }
 
     @Override
@@ -102,13 +108,13 @@ public final class QuiltPath implements Path {
 
     @Override
     Path getName(int index) {
-        new QuiltPath(filesystem, pkg_name, names[0,index])
+        new QuiltPath(filesystem, pkg_name, names[0,index], options)
     }
 
     @Override
     Path subpath(int beginIndex, int endIndex) {
         final sub = names[beginIndex,endIndex].join(SEP)
-        new QuiltPath(filesystem, pkg_name, sub)
+        new QuiltPath(filesystem, pkg_name, sub, options)
     }
 
     @Override
@@ -145,27 +151,27 @@ public final class QuiltPath implements Path {
         if( other.isAbsolute() )
             return that
 
-        new QuiltPath(filesystem, pkg_name, other.toString())
+        new QuiltPath(filesystem, pkg_name, other.toString(), options)
     }
 
     @Override
     QuiltPath resolve(String other) {
-        new QuiltPath(filesystem, pkg_name, other)
+        new QuiltPath(filesystem, pkg_name, other, options)
     }
 
     @Override
     Path resolveSibling(Path other) {
-      new QuiltPath(filesystem, pkg_name, other.toString())
+      new QuiltPath(filesystem, pkg_name, other.toString(), options)
     }
 
     @Override
     Path resolveSibling(String other) {
-      new QuiltPath(filesystem, pkg_name, other)
+      new QuiltPath(filesystem, pkg_name, other, options)
     }
 
     @Override
     Path relativize(Path other) {
-        new QuiltPath(filesystem,null,filepath())
+        new QuiltPath(filesystem, null, filepath(), options)
     }
 
     @Override

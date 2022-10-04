@@ -36,12 +36,15 @@ class QuiltPathFactoryTest extends QuiltSpecification {
         and:
         def factory = new QuiltPathFactory()
         and:
-        def url = 'quilt://registry-bucket-name/pkg/name/optional/file/path?hash=hexcode&summarize=pattern1&summarize=pattern2>&metadata=filename.json'
+        def url = 'quilt://registry-bucket-name/pkg/name/optional/file/path?hash=hexcode&summarize=pattern1&summarize=pattern2&metadata=filename.json'
         and:
-        def path = factory.parseUri(url)
+        def qpath = factory.parseUri(url)
         expect:
-        path != null
-
+        qpath != null
+        qpath.registry() == 'registry-bucket-name'
+        qpath.pkg_name() == 'pkg/name'
+        qpath.filepath() == 'optional/file/path'
+        qpath.option('hash') != null
     }
 
     def 'should create quilt path #PATH' () {

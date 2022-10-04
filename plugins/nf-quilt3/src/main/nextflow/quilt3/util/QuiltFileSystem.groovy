@@ -50,8 +50,8 @@ public final class QuiltFileSystem extends FileSystem {
       this.provider = provider;
     }
 
-    public QuiltPath getPath(String pkg_name, String path) {
-      return new QuiltPath(this, pkg_name, path)
+    public QuiltPath getPath(String pkg_name, String path, Map<String,Object> opts) {
+      return new QuiltPath(this, pkg_name, path, opts)
     }
 
     void copy(QuiltPath source, QuiltPath target) {
@@ -104,7 +104,7 @@ public final class QuiltFileSystem extends FileSystem {
     @Override
     QuiltPath getPath(String pkg_name, String... more) {
         final String path = more.join(QuiltPath.SEP)
-        return new QuiltPath(this, pkg_name, path)
+        return new QuiltPath(this, pkg_name, path, null)
     }
 
     protected String toUriString(Path path) {

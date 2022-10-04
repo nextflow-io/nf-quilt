@@ -47,6 +47,8 @@ import groovy.util.logging.Slf4j
  *
  * @author Paolo Di Tommaso <paolo.ditommaso@gmail.com>
  */
+
+
 @Slf4j
 @CompileStatic
 class QuiltFileSystemProvider extends FileSystemProvider {
@@ -78,6 +80,12 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         return (QuiltFileSystem)fs
     }
 
+    static private Map<String,Object> parseQuery(String query) {
+        final queryParams = query?.split('&') // safe operator for urls without query params
+        queryParams.collectEntries { param -> param.split('=').collect { URLDecoder.decode(it) }}
+    }
+    // def map = url.query.split('&').inject([:])
+    // {map, kv-> def (key, value) = kv.split('=').toList(); map[key] = value != null ? URLDecoder.decode(value) : null; map }
 
     protected String getRegistryName(URI uri) {
         assert uri
@@ -240,14 +248,16 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      * @param path A path in the form {@code containerName/blobName}
      * @return A {@link QuiltPath} object
      */
-    QuiltPath getPath(QuiltFileSystem fs, String path, String query) {
+    QuiltPath getPath(QuiltFileSystem fs, String abspath, String query) {
+        final path = abspath.substring(1)
         final pkg_split = path.indexOf('/', path.indexOf("/") + 1)
         if( pkg_split==-1 )
             return null
 
         final String pkg_name = path.substring(0,pkg_split)
-        final String filepath = path.substring(pkg_split)
-        return fs.getPath(pkg_name, filepath)
+        final String filepath = path.substring(pkg_split+1)
+        final opts = parseQuery(query)
+        return new QuiltPath(fs, pkg_name, filepath, opts)
     }
 
     static private FileSystemProvider provider( Path path ) {
