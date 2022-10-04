@@ -64,7 +64,6 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         return SCHEME
     }
 
-
     static private QuiltPath asQuiltPath(Path path ) {
         if( path !instanceof QuiltPath )
             throw new IllegalArgumentException("Not a valid Quilt blob storage path object: `$path` [${path?.class?.name?:'-'}]" )
@@ -89,10 +88,10 @@ class QuiltFileSystemProvider extends FileSystemProvider {
             throw new IllegalArgumentException("Mismatch provider URI scheme: `$scheme`")
 
         if( !uri.authority ) {
-            if( uri.path == '/' )
-                return '/'
+            if( uri.host )
+                return uri.host.toLowerCase()
             else
-                throw new IllegalArgumentException("Missing Quilt blob storage container name")
+                throw new IllegalArgumentException("Missing Quilt registry name")
         }
 
         return uri.authority.toLowerCase()
@@ -230,8 +229,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     QuiltPath getPath(URI uri) {
-        final bucket = getRegistryName(uri)
-        bucket=='/' ? getPath('/') : getPath("$bucket/${uri.path}")
+        final registry = getRegistryName(uri)
+        final fs = getFileSystem0(registry,true)
+        getPath(fs, uri.path, uri.query)
     }
 
     /**
@@ -240,24 +240,14 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      * @param path A path in the form {@code containerName/blobName}
      * @return A {@link QuiltPath} object
      */
-    QuiltPath getPath(String uri) {
-        assert uri
-        final body = uri.substring(8)
-
-        final reg_split = body.indexOf('/')
-        if( reg_split==-1 )
-            return null
-
-        final registry = body.substring(0,reg_split)
-        final pkg_path = body.substring(reg_split)
-        final pkg_split = pkg_path.indexOf('/', pkg_path.indexOf("/") + 1)
+    QuiltPath getPath(QuiltFileSystem fs, String path, String query) {
+        final pkg_split = path.indexOf('/', path.indexOf("/") + 1)
         if( pkg_split==-1 )
             return null
 
-        final pkg_name = pkg_path.substring(0,pkg_split)
-        final path = pkg_path.substring(pkg_split)
-        final fs = getFileSystem0(registry,true)
-        return fs.getPath(pkg_name, path)
+        final String pkg_name = path.substring(0,pkg_split)
+        final String filepath = path.substring(pkg_split)
+        return fs.getPath(pkg_name, filepath)
     }
 
     static private FileSystemProvider provider( Path path ) {

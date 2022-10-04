@@ -40,22 +40,25 @@ import nextflow.quilt3.QuiltOpts
 public final class QuiltPath implements Path {
     final public static String SEP = '/'
 
-    public QuiltFileSystem filesystem
-    protected String pkg_name
-    protected String path
+    private QuiltFileSystem filesystem
+    private String pkg_name
     private String[] names
 
-    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String path=null) {
+    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String filepath=null) {
         this.filesystem = filesystem
         this.pkg_name = pkg_name
-        this.names = path.split(SEP)
+        this.names = filepath.split(SEP)
     }
 
     public String registry() {
         return filesystem.registry
     }
 
-    public String path() {
+    public String pkg_name() {
+        return pkg_name
+    }
+
+    public String filepath() {
         return names.join(SEP)
     }
 
@@ -99,7 +102,7 @@ public final class QuiltPath implements Path {
 
     @Override
     Path getName(int index) {
-        new QuiltPath(filesystem, pkg_name, names[index])
+        new QuiltPath(filesystem, pkg_name, names[0,index])
     }
 
     @Override
@@ -115,7 +118,7 @@ public final class QuiltPath implements Path {
 
     @Override
     boolean startsWith(String other) {
-        path().startsWith(other)
+        startsWith(other)
     }
 
     @Override
@@ -125,7 +128,7 @@ public final class QuiltPath implements Path {
 
     @Override
     boolean endsWith(String other) {
-        path().endsWith(other)
+        endsWith(other)
     }
 
     @Override
@@ -162,12 +165,12 @@ public final class QuiltPath implements Path {
 
     @Override
     Path relativize(Path other) {
-        new QuiltPath(filesystem,null,path())
+        new QuiltPath(filesystem,null,filepath())
     }
 
     @Override
     String toString() {
-        path()
+        toUriString()
     }
 
     String toUriString() {

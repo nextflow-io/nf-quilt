@@ -30,6 +30,20 @@ import spock.lang.Unroll
 class QuiltPathFactoryTest extends QuiltSpecification {
 
     @Unroll
+    def 'should decompose Quilt URLs' () {
+        given:
+        Global.session = Mock(Session) {}
+        and:
+        def factory = new QuiltPathFactory()
+        and:
+        def url = 'quilt://registry-bucket-name/pkg/name/optional/file/path?hash=hexcode&summarize=pattern1&summarize=pattern2>&metadata=filename.json'
+        and:
+        def path = factory.parseUri(url)
+        expect:
+        path != null
+
+    }
+
     def 'should create quilt path #PATH' () {
         given:
         Global.session = Mock(Session) {

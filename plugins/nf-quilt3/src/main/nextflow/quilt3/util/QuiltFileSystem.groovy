@@ -42,8 +42,6 @@ import nextflow.quilt3.QuiltOpts
 // https://github.com/nextflow-io/nextflow-s3fs/tree/master/src/main/java/com/upplication/s3fs
 public final class QuiltFileSystem extends FileSystem {
 
-    public static final String URI_SCHEME = "quilt"
-
     public final String registry;
     protected final QuiltFileSystemProvider provider
 
