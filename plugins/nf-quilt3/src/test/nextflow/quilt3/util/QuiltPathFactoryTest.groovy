@@ -15,10 +15,10 @@
  */
 
 package nextflow.quilt3.util
+import nextflow.quilt3.QuiltSpecification
 
 import nextflow.Global
 import nextflow.Session
-import spock.lang.Specification
 import spock.lang.Unroll
 
 /**

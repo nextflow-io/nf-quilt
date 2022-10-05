@@ -15,10 +15,10 @@
  */
 
 package nextflow.quilt3.util
+import nextflow.quilt3.QuiltSpecification
 
 import nextflow.Session
 import nextflow.util.Duration
-import spock.lang.Specification
 /**
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>

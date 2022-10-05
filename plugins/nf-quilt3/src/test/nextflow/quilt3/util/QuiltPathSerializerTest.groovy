@@ -15,13 +15,12 @@
  */
 
 package nextflow.quilt3.util
+import nextflow.quilt3.QuiltSpecification
 
 import java.nio.file.Path
 import java.nio.file.Paths
-
 import nextflow.Global
 import nextflow.Session
-import spock.lang.Specification
 
 /**
  *

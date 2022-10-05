@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3.util
+package nextflow.quilt3
 
 import java.nio.file.Paths
 
@@ -107,11 +107,6 @@ abstract class QuiltSpecification extends Specification {
         result.getFileName() >> { Paths.get(tokens[-1]) }
         result.getName() >> tokens[1]
         return result
-    }
-
-    static QuiltPath quiltPath(String path) {
-        assert path.startsWith('quilt://')
-        (QuiltPath) Paths.get( new URI(null,null,path,null,null))
     }
 
 }
