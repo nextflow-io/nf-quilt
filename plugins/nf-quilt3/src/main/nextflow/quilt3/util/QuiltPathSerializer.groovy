@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package nextflow.quilt3.util
 
 import groovy.transform.CompileStatic
