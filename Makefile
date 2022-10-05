@@ -28,7 +28,11 @@ test-pub:
 
 qtest: compile
 	./launch.sh run test/publish.nf -plugins nf-quilt3 --pubdir quilt://quilt-ernest-staging/nf-quilt/test-oct4/
-	
+
+shell:
+	./gradlew -q --no-daemon --console=plain --init-script gradle/groovysh-init.gradle groovysh
+# https://gist.github.com/sandipchitale/6f53c646ec00752d41cddcca243d76cf
+
 #
 # Show dependencies try `make deps config=runtime`, `make deps config=google`
 #
