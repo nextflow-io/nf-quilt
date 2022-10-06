@@ -31,7 +31,8 @@ test-pub:
 	ls -lR /tmp/nf-quilt
 
 qtest: compile
-	./launch.sh run test/publish.nf -plugins nf-quilt3 --pubdir quilt://quilt-ernest-staging/nf-quilt/test-oct4/
+	clear
+	./launch.sh run test/publish.nf -plugins nf-quilt3 --pubdir quilt://quilt-ernest-staging/nf-quilt/test-out/
 
 shell:
 	./gradlew -q --no-daemon --console=plain --init-script gradle/groovysh-init.gradle groovysh

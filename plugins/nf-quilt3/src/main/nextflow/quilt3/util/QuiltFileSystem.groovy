@@ -16,6 +16,7 @@
 
 package nextflow.quilt3.util
 
+import java.nio.channels.SeekableByteChannel
 import java.nio.file.FileSystem
 import java.nio.file.FileStore
 import java.nio.file.Path
@@ -25,6 +26,7 @@ import java.nio.file.attribute.UserPrincipalLookupService
 import java.nio.file.spi.FileSystemProvider;
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 import nextflow.Global
 import nextflow.Session
 import nextflow.quilt3.QuiltOpts
@@ -36,10 +38,12 @@ import nextflow.quilt3.QuiltOpts
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
-@CompileStatic
+
 
 // cf. https://cloud.google.com/java/docs/reference/google-cloud-nio/latest/com.google.cloud.storage.contrib.nio.CloudStorageFileSystem
 // https://github.com/nextflow-io/nextflow-s3fs/tree/master/src/main/java/com/upplication/s3fs
+@Slf4j
+@CompileStatic
 public final class QuiltFileSystem extends FileSystem {
 
     public final String registry;
@@ -59,7 +63,8 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     void delete(QuiltPath path) {
-      throw new UnsupportedOperationException("Operation 'delete' is not supported by QuiltFileSystem")
+        log.info "Mocking call to `delete`: ${path}"
+      //throw new UnsupportedOperationException("Operation 'delete' is not supported by QuiltFileSystem")
     }
 
     @Override
@@ -85,6 +90,20 @@ public final class QuiltFileSystem extends FileSystem {
     @Override
     String getSeparator() {
         return QuiltPath.SEP
+    }
+
+    boolean exists(QuiltPath path) {
+        return false
+    }
+
+    SeekableByteChannel newReadableByteChannel(QuiltPath path) {
+        log.info "Mocking call to `newReadableByteChannel`: ${path}"
+        null
+    }
+
+    SeekableByteChannel newWritableByteChannel(QuiltPath path) {
+        log.info "Mocking call to `newWritableByteChannel`: ${path}"
+        null
     }
 
     Iterable<? extends Path> getRootDirectories() {

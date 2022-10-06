@@ -31,6 +31,7 @@ import java.nio.file.FileSystemAlreadyExistsException
 import java.nio.file.FileSystemNotFoundException
 import java.nio.file.LinkOption
 import java.nio.file.NoSuchFileException
+import java.nio.file.NotDirectoryException;
 import java.nio.file.OpenOption
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributeView
@@ -269,6 +270,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     SeekableByteChannel newByteChannel(Path obj, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+        log.info "Faking call to `newByteChannel`: ${obj}"
         checkRoot(obj)
 
         final modeWrite = options.contains(WRITE) || options.contains(APPEND)
@@ -288,26 +290,52 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         }
 
         final path = asQuiltPath(obj)
-        final fs = path.getFileSystem()
-        //if( modeRead ) {return fs.newReadableByteChannel(path)}
-
-        if( options.contains(APPEND) ) {
-            throw new IllegalArgumentException("File APPEND mode is not supported by Quilt Blob Storage")
+        final fs = getQuiltFilesystem(obj)
+        if( modeRead ) {
+            return fs.newReadableByteChannel(path)
         }
-        return null //fs.newWritableByteChannel(path)
+
+        // -- mode write
+        if( options.contains(CREATE_NEW) ) {
+            if( fs.exists(path) )
+                throw new FileAlreadyExistsException(path.toUriString())
+        }
+        else if( !options.contains(CREATE)  ) {
+            if( !fs.exists(path) )
+                throw new NoSuchFileException(path.toUriString())
+        }
+        if( options.contains(APPEND) ) {
+            throw new IllegalArgumentException("File APPEND mode is not supported by Azure Blob Storage")
+        }
+        return fs.newWritableByteChannel(path)
     }
 
+    private List<Path> listFiles(Path dir, DirectoryStream.Filter<? super Path> filter ) {
+        log.info "Faking call to `listFiles`: ${dir}"
+        [dir]
+    }
 
     @Override
     DirectoryStream<Path> newDirectoryStream(Path obj, DirectoryStream.Filter<? super Path> filter) throws IOException {
-        final path = asQuiltPath(obj)
-        throw new IllegalArgumentException("Quilt file system does not support `newDirectoryStream`")
-        // path.fileSystem.newDirectoryStream(path, filter)
+        log.info "Creating `newDirectoryStream`: ${obj}"
+        final qPath = asQuiltPath(obj)
+        if (!qPath.isPackage())
+            throw new NotDirectoryException(qPath.toString());
+
+        final list = listFiles(obj, filter)
+        return new DirectoryStream<Path>() {
+            @Override
+            Iterator<Path> iterator() {
+                list.iterator()
+            }
+
+            @Override void close() throws IOException { }
+        }
     }
 
     @Override
     void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-        log.info "Ignoring call to  `createDirectory`: ${dir}"
+        log.info "Ignoring call to `createDirectory`: ${dir}"
     }
 
     @Override
@@ -356,7 +384,10 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     void checkAccess(Path path, AccessMode... modes) throws IOException {
         checkRoot(path)
-        log.info "Ignoring call to  `checkAccess`: ${path}"
+        final qPath = asQuiltPath(path)
+        readAttributes(qPath, QuiltFileAttributes.class)
+        if( AccessMode.EXECUTE in modes)
+            throw new AccessDeniedException(qPath.toUriString(), null, 'Execute permission not allowed')
     }
 
     @Override
@@ -367,13 +398,16 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     def <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
+        throw new NoSuchFileException(path.toUriString())
+
         if( type == BasicFileAttributes || type == QuiltFileAttributes ) {
+            log.info "Mocking call to `readAttributes`: ${path}"
             def qPath = asQuiltPath(path)
             def key = qPath.toString()
             def lastModifiedTime = FileTime.fromMillis(1_000_000_000_000)
             def size = 1000
-
-            return (A) new QuiltFileAttributes(key, lastModifiedTime, size, true, false);
+            def isPackage = qPath.isPackage()
+            return (A) new QuiltFileAttributes(key, lastModifiedTime, size, isPackage, !isPackage);
         }
         throw new UnsupportedOperationException("Not a valid Quilt Storage file attribute type: $type")
     }
