@@ -18,6 +18,10 @@ compile:
 check:
 	./gradlew check
 
+check3: compile
+	clear
+	./gradlew check || open file:///Users/quilt/Documents/GitHub/nf-quilt/plugins/nf-quilt3/build/reports/tests/test/index.html
+
 run:
 	./launch.sh run nextflow-io/hello -plugins nf-quilt3
 

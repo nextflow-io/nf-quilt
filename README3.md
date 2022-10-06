@@ -8,12 +8,9 @@ wherever you currently use `s3`, `az` or `gs` URLs.
 
 ## Getting Started
 
-To add the `nf-quilt3` plugin to your workflow, you need Nextflow 22.04 (or later) and Python 3.7 (or later).
+To add the `nf-quilt3` plugin to your workflow, you need Nextflow 22.09 (or later) and Python 3.9 (or later).
 
-You need to install the `quilt3` command-line tool in the appropriate PATH (local or container)
-```bash
-pip3 install quilt3
-```
+### Pipeline Configuration
 
 Add the following snippet to your `nextflow.config` to enable the plugin:
 ```groovy
@@ -21,6 +18,20 @@ plugins {
     id 'nf-quilt3'
 }
 ```
+
+### Quilt Configuration
+
+This plugin uses [Java Embedded Python](https://github.com/ninia/jep) to call the Quilt API.
+To use it, your container must install and link to the appropriate libraries:
+
+```bash
+pip3 install quilt3 jep # -r requirements.txt
+export DYLD_LIBRARY_PATH=`pip3 show jep|awk '/^Location/ {print $2}'` # macOS
+export LD_LIBRARY_PATH=`pip3 show jep|awk '/^Location/ {print $2}'` # Linux
+# Do not overwrite if already set: if [ ${1+x} ]; then https://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash
+```
+
+### Reading and Writing Quilt URLs
 
 Next, create a Quilt URL for the S3 bucket where you want to store (and eventually read) your results.
 You must also specify a package name containing exactly one '/', such as `instrument/experiment`
