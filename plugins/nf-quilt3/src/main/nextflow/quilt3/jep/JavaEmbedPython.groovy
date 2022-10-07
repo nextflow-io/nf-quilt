@@ -19,10 +19,9 @@
 
 package nextflow.quilt3.jep
 
-import jep.*
-//import jep.JepConfig;
-//import jep.MainInterpreter;
-//import jep.SubInterpreter;
+import jep.JepConfig;
+import jep.MainInterpreter;
+import jep.SubInterpreter;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -74,7 +73,7 @@ class JavaEmbedPython {
         this.config = new JepConfig()
         if ( sourceDir ) {
             String sourcePath = System.getProperty("user.dir")+sourceDir // set path for python docs with python script to run
-            this.config.addIncludePaths(sourcePath)            
+            this.config.addIncludePaths(sourcePath)
         }
         this.subInterp = config.createSubInterpreter() //create the interpreter for python executing
     }
