@@ -1,3 +1,7 @@
+# Ignore noise
+.DS_*
+*.log
+
 # Ignore Gradle project-specific cache directory
 .gradle
 .idea
