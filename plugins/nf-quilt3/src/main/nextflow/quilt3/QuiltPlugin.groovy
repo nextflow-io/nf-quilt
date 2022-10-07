@@ -20,7 +20,7 @@ import groovy.transform.CompileStatic
 import nextflow.plugin.BasePlugin
 import nextflow.file.FileHelper
 import org.pf4j.PluginWrapper
-import nextflow.quilt3.util.QuiltFileSystemProvider
+import nextflow.quilt3.nio.QuiltFileSystemProvider
 /**
  * Implement the plugin entry point for Quilt support
  *

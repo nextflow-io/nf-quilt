@@ -14,32 +14,23 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3.util
-import nextflow.quilt3.QuiltSpecification
+package nextflow.quilt3.nio
 
-import java.nio.file.Path
-import java.nio.file.Paths
-import nextflow.Global
-import nextflow.Session
+import groovy.transform.CompileStatic
+import nextflow.util.PathSerializer
+import nextflow.util.SerializerRegistrant
+import org.pf4j.Extension
 
 /**
+ * Register the QuiltPath serializer
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
-class QuiltPathSerializerTest extends QuiltSpecification {
-
-    def 'should serialize a Quilt path'() {
-        given:
-        Global.session = Mock(Session) {
-            getConfig() >> [quilt:[project:'foo', region:'x']]
-        }
-
-        when:
-        def uri = URI.create("quilt://bucket/pkg/name/sample.csv")
-        def path = Paths.get(uri)
-        then:
-        path instanceof QuiltPath
-        path.toUri() == uri
-        path.toUriString() == "quilt://bucket/pkg/name/sample.csv"
+@Extension
+@CompileStatic
+class QuiltPathSerializer implements SerializerRegistrant  {
+    @Override
+    void register(Map<Class, Object> serializers) {
+        serializers.put(QuiltPath, PathSerializer)
     }
 }

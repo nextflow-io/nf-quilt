@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3.util
-import nextflow.quilt3.QuiltSpecification
+ package nextflow.quilt3.jep
+ import nextflow.quilt3.QuiltSpecification
 
 import nextflow.Global
 import nextflow.Session

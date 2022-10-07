@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3.util
-import nextflow.quilt3.QuiltSpecification
+package nextflow.quilt3.nio
 
+import nextflow.Global
 import nextflow.Session
-import nextflow.util.Duration
-/**
- *
- * @author Ernest Prabhakar <ernest@quiltdata.io>
- */
-class QuiltBashLibTest extends QuiltSpecification {
+import nextflow.executor.BashFunLib
 
+/**
+ * Quilt helper class
+ */
+class QuiltBashLib extends BashFunLib<QuiltBashLib> {
+
+    private String storageClass = 'STANDARD'
+
+    static String script() {
+      "quilt3 install"
+    }
 }

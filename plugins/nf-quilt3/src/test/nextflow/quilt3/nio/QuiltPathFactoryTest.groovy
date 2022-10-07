@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3.util
+package nextflow.quilt3.nio
 import nextflow.quilt3.QuiltSpecification
 
 import nextflow.Global

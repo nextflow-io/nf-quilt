@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3.util
+package nextflow.quilt3.nio
 
 import java.nio.file.Path
 

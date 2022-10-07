@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package nextflow.quilt3.util
+package nextflow.quilt3.nio
 
 import static java.lang.String.format;
 import java.nio.file.attribute.BasicFileAttributeView
