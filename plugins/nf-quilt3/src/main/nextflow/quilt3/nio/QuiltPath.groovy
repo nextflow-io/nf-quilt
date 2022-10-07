@@ -83,7 +83,7 @@ public final class QuiltPath implements Path {
         getNameCount() == 0
     }
 
-    Path getPackage() {
+    QuiltPath getPackage() {
         isPackage() ? this : new QuiltPath(filesystem, pkg_name, "", null)
     }
 

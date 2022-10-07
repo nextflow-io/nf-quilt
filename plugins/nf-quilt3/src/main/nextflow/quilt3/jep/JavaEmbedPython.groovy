@@ -68,11 +68,17 @@ class JavaEmbedPython {
         path
     }
 
+    static public String makeCall(String obj, String method, String[] args) {
+        def cmd = obj ? "${obj}.${method}" : method
+        def arglist = args.join(',')
+        "$cmd($arglist)"
+    }
+
     static public JavaEmbedPython Context() {
         jep
     }
 
-    static public JavaEmbedPython WithModules(ArrayList<String> modules) {
+    static public JavaEmbedPython WithModules(List<String> modules) {
         modules.each { jep.import_module(it) }
         jep
     }
@@ -90,6 +96,7 @@ class JavaEmbedPython {
     }
 
     void eval(String python_script) {
+        log.debug('eval', python_script)
         subInterp.eval(python_script);
     }
 

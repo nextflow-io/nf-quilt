@@ -44,17 +44,17 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-def s3_list_directories(s3_client, bucket_name='', prefix=''):
+def s3_list_directories(s3_client, bucket='', prefix=''):
     '''List all 'directories' in a parent 'directory' (i.e. bucket prefix) of an S3 bucket.
 
     :param s3_client: S3 client
-    :param bucket_name: S3 bucket
+    :param bucket: S3 bucket
     :param prefix: S3 path prefix
     '''
-    logging.info(f'Listing directories in s3://{bucket_name}/{prefix}')
+    logging.info(f'Listing directories in s3://{bucket}/{prefix}')
 
     paginator = s3_client.get_paginator('list_objects_v2')
-    pages = paginator.paginate(Bucket=bucket_name, Prefix=prefix, Delimiter='/')
+    pages = paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter='/')
 
     for page_idx, page in enumerate(pages):
         logging.info(f'  Page: {page_idx}, Prefix: {prefix}')
@@ -93,7 +93,7 @@ def s3_classify_paths(paths, aws_profile=None):
 
     for path in paths:
         # Extract bucket name and object path from S3 path
-        bucket_name, object_path = path.replace('s3://', '').split('/', maxsplit=1)
+        bucket, object_path = path.replace('s3://', '').split('/', maxsplit=1)
 
         # Extract parent directory from object path
         if object_path.endswith('/'):
@@ -113,7 +113,7 @@ def s3_classify_paths(paths, aws_profile=None):
 
         # Skip if parent directory has already been queried
         elif prefix in cache:
-            logging.info(f'Parent directory `s3://{bucket_name}/{prefix}` already queried')
+            logging.info(f'Parent directory `s3://{bucket}/{prefix}` already queried')
 
         # Otherwise, query parent directory and update cache
         else:
@@ -121,7 +121,7 @@ def s3_classify_paths(paths, aws_profile=None):
 
             # Add parent directory and child directories to cache
             cache.add(prefix)
-            cache = cache.union(s3_list_directories(s3_client, bucket_name, prefix))
+            cache = cache.union(s3_list_directories(s3_client, bucket, prefix))
 
             # Check if object path is a directory
             if object_path in cache:

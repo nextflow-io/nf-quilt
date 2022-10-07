@@ -31,16 +31,14 @@ class QuiltPathFactoryTest extends QuiltSpecification {
     @Unroll
     def 'should decompose Quilt URLs' () {
         given:
-        Global.session = Mock(Session) {}
-        and:
         def factory = new QuiltPathFactory()
         and:
-        def url = 'quilt://bucket_name/pkg/name/optional/file/path?hash=hexcode&summarize=pattern1&summarize=pattern2&metadata=filename.json'
+        def url = 'quilt://bucket/pkg/name/optional/file/path?hash=hexcode&summarize=pattern1&summarize=pattern2&metadata=filename.json'
         and:
         def qpath = factory.parseUri(url)
         expect:
         qpath != null
-        qpath.bucket() == 'bucket_name'
+        qpath.bucket() == 'bucket'
         qpath.pkg_name() == 'pkg/name'
         qpath.filepath() == 'optional/file/path'
         qpath.option('hash') == 'hexcode'

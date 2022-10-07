@@ -87,4 +87,15 @@ class JavaEmbedPythonTest extends QuiltSpecification {
         config['navigator_url'] == 'https://example.com'
     }
 
+    def 'should construct method calls'() {
+        when:
+        def call = JavaEmbedPython.makeCall(null, "print","'four'","2 + 2")
+        def mcall = JavaEmbedPython.makeCall('Math', 'sqrt',"2 + 2")
+        def ncall = JavaEmbedPython.makeCall('Math', 'Pi')
+        then:
+        call == "print('four',2 + 2)"
+        mcall == "Math.sqrt(2 + 2)"
+        ncall == "Math.Pi()"
+    }
+
 }
