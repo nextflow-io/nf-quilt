@@ -40,7 +40,7 @@ System.out.println(subInterp.getValue("res_c"));
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
 class JavaEmbedPythonTest extends QuiltSpecification {
-    static JavaEmbedPython jep = new JavaEmbedPython()
+    static JavaEmbedPython jep = JavaEmbedPython.Context()
 
     def 'should be able to compile and run wrapper class'() {
         expect:
@@ -63,7 +63,7 @@ class JavaEmbedPythonTest extends QuiltSpecification {
 
     def 'should import quilt'() {
         expect:
-        jep.eval("import quilt3")
+        jep.import_module("quilt3")
     }
 
     def 'should evaluate expressions'() {
@@ -77,11 +77,11 @@ class JavaEmbedPythonTest extends QuiltSpecification {
 
     def 'should return quilt config as Map'() {
         when:
-        jep.eval("import quilt3")
+        def j2 = JavaEmbedPython.WithModules(['quilt3'])
         and:
-        jep.setValue("cf", "quilt3.config(navigator_url='https://example.com')")
+        j2.setValue("cf", "quilt3.config(navigator_url='https://example.com')")
         and:
-        def config = jep.getValue("cf")
+        def config = j2.getValue("cf")
         then:
         config['default_local_registry'].contains("packages")
         config['navigator_url'] == 'https://example.com'

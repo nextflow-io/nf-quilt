@@ -39,11 +39,12 @@ class JavaEmbedPython {
 
     protected static final String MACOS_LIB = "/jep/libjep.jnilib"
     protected static final String LINUX_LIB = "/jep/libjep.so"
+    protected static JavaEmbedPython jep = new JavaEmbedPython()
 
     private JepConfig config
     private SubInterpreter subInterp
 
-    //define the JEP library path
+    // define the JEP library path
     static public String findPythonPath() {
         String path = System.getenv(MACOS_LIB_PATH)
         if ( !path ) {
@@ -67,20 +68,33 @@ class JavaEmbedPython {
         path
     }
 
-    JavaEmbedPython(String sourceDir = null) {
+    static public JavaEmbedPython Context() {
+        jep
+    }
+
+    static public JavaEmbedPython WithModules(ArrayList<String> modules) {
+        modules.each { jep.import_module(it) }
+        jep
+    }
+
+    private JavaEmbedPython() {
         String jepPath = findJepPath() // set path for jep executing python3.9
         MainInterpreter.setJepLibraryPath(jepPath) //initialize the MainInterpreter
         this.config = new JepConfig()
-        if ( sourceDir ) {
-            String sourcePath = System.getProperty("user.dir")+sourceDir // set path for python docs with python script to run
-            this.config.addIncludePaths(sourcePath)
-        }
         this.subInterp = config.createSubInterpreter() //create the interpreter for python executing
     }
 
+    void addSourceDir(String sourceDir) {
+        String sourcePath = System.getProperty("user.dir")+sourceDir // set path for python docs with python script to run
+        this.config.addIncludePaths(sourcePath)
+    }
 
     void eval(String python_script) {
         subInterp.eval(python_script);
+    }
+
+    void import_module(String module) {
+        subInterp.eval("import $module");
     }
 
     Object getValue(String variable) {
