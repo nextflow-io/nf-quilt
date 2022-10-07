@@ -89,7 +89,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     // def map = url.query.split('&').inject([:])
     // {map, kv-> def (key, value) = kv.split('=').toList(); map[key] = value != null ? URLDecoder.decode(value) : null; map }
 
-    protected String getRegistryName(URI uri) {
+    protected String getBucketName(URI uri) {
         assert uri
         if( !uri.scheme )
             throw new IllegalArgumentException("Missing URI scheme")
@@ -101,7 +101,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
             if( uri.host )
                 return uri.host.toLowerCase()
             else
-                throw new IllegalArgumentException("Missing Quilt registry name")
+                throw new IllegalArgumentException("Missing Quilt bucket name")
         }
 
         return uri.authority.toLowerCase()
@@ -148,13 +148,13 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     QuiltFileSystem newFileSystem(URI uri, Map<String, ?> config) throws IOException {
-        final bucket = getRegistryName(uri)
+        final bucket = getBucketName(uri)
         newFileSystem(bucket,config)
     }
 
-    QuiltFileSystem newFileSystem(String registry, Map<String, ?> env) throws IOException {
-        final fs = new QuiltFileSystem(registry, this)
-        fileSystems[registry] = fs
+    QuiltFileSystem newFileSystem(String bucket, Map<String, ?> env) throws IOException {
+        final fs = new QuiltFileSystem(bucket, this)
+        fileSystems[bucket] = fs
         fs
     }
 
@@ -194,7 +194,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     FileSystem getFileSystem(URI uri) {
-        final bucket = getRegistryName(uri)
+        final bucket = getBucketName(uri)
         getFileSystem0(bucket,false)
     }
 
@@ -239,8 +239,8 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     QuiltPath getPath(URI uri) {
-        final registry = getRegistryName(uri)
-        final fs = getFileSystem0(registry,true)
+        final bucket = getBucketName(uri)
+        final fs = getFileSystem0(bucket,true)
         getPath(fs, uri.path, uri.query)
     }
 

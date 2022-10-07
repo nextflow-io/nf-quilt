@@ -53,8 +53,8 @@ public final class QuiltPath implements Path {
         this.options = options
     }
 
-    public String registry() {
-        return filesystem.registry
+    public String bucket() {
+        return filesystem.bucket
     }
 
     public String pkg_name() {

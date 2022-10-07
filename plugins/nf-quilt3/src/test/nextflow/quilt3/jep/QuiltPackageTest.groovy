@@ -26,10 +26,22 @@ import spock.lang.Unroll
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
 
-class QuiltFileSystemProviderTest extends QuiltSpecification {
+class QuiltPackageTest extends QuiltSpecification {
 
     @Unroll
-    def 'should create DirectoryStream' () {
+    def 'should create a singleton Interpreter' () {
+    }
+
+    def 'should create a single Package for all associated Paths' () {
+    }
+
+    def 'should distinguish Packages with same name but different Registry ' () {
+    }
+
+    def 'Package should install and upload from a staging directory' () {
+    }
+
+    def 'Package should return Attributes IFF the file exists' () {
     }
 
 }

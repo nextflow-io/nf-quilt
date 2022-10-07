@@ -46,11 +46,11 @@ import nextflow.quilt3.QuiltOpts
 @CompileStatic
 public final class QuiltFileSystem extends FileSystem {
 
-    public final String registry;
+    public final String bucket;
     protected final QuiltFileSystemProvider provider
 
-    public QuiltFileSystem(String registry, QuiltFileSystemProvider provider) {
-      this.registry = registry;
+    public QuiltFileSystem(String bucket, QuiltFileSystemProvider provider) {
+      this.bucket = bucket;
       this.provider = provider;
     }
 
