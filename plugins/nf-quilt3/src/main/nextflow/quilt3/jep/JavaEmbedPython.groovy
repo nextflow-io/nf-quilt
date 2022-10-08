@@ -41,8 +41,15 @@ class JavaEmbedPython {
     protected static final String LINUX_LIB = "/jep/libjep.so"
     protected static JavaEmbedPython jep = new JavaEmbedPython()
 
-    private JepConfig config
-    private SubInterpreter subInterp
+    private final JepConfig config
+    private final SubInterpreter subInterp
+
+
+    static public String MakeCall(String obj, String method, List<String> args = []) {
+        def cmd = obj ? "${obj}.${method}" : method
+        def arglist = args.join(',')
+        "$cmd($arglist)"
+    }
 
     // define the JEP library path
     static public String findPythonPath() {
@@ -66,12 +73,6 @@ class JavaEmbedPython {
             throw new FileNotFoundException("No JavaEmbedPython library at: `$path`" )
         }
         path
-    }
-
-    static public String makeCall(String obj, String method, String[] args) {
-        def cmd = obj ? "${obj}.${method}" : method
-        def arglist = args.join(',')
-        "$cmd($arglist)"
     }
 
     static public JavaEmbedPython Context() {

@@ -57,8 +57,8 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     public static final String SCHEME = 'quilt'
 
-    private Map<String,String> env = new HashMap<>(System.getenv())
-    private Map<String,QuiltFileSystem> fileSystems = [:]
+    private final Map<String,String> env = new HashMap<>(System.getenv())
+    private final Map<String,QuiltFileSystem> fileSystems = [:]
 
     /**
      * @inheritDoc
@@ -254,9 +254,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         final path = abspath.substring(1)
         final pkg_split = path.indexOf('/', path.indexOf("/") + 1)
         final String pkg_name = (pkg_split==-1) ? path : path.substring(0,pkg_split)
-        final String filepath = (pkg_split==-1) ? null : path.substring(pkg_split+1)
+        final String file_key = (pkg_split==-1) ? null : path.substring(pkg_split+1)
         final opts = query ? parseQuery(query) : null
-        return new QuiltPath(fs, pkg_name, filepath, opts)
+        return new QuiltPath(fs, pkg_name, file_key, opts)
     }
 
     static private FileSystemProvider provider( Path path ) {

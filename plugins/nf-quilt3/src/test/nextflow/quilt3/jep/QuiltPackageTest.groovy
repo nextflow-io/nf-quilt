@@ -25,6 +25,8 @@ import nextflow.Session
 import spock.lang.Unroll
 import spock.lang.Shared
 import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  *
@@ -36,17 +38,18 @@ class QuiltPackageTest extends QuiltSpecification {
     QuiltPath qpath
     QuiltPackage pkg
 
+    static JavaEmbedPython jep = JavaEmbedPython.WithModules(['quilt3'])
+    static String pkg_url = 'quilt://quilt-example/examples/hurdat/'
+    static String url = pkg_url + '/scripts/build.py?hash=058e62ccfa'
+
     def setup() {
         factory = new QuiltPathFactory()
-        qpath = factory.parseUri(path)
-        pkg = QuiltPackage.ForPath(qpath)
+        qpath = factory.parseUri(url)
+        pkg = qpath.pkg()
     }
 
-    static JavaEmbedPython jep = JavaEmbedPython.WithModules(['quilt3'])
-    static String path = 'quilt://bucket/pkg/name/file/path?hash=hexcode'
-
     @Unroll
-    def 'should create a singleton Interpreter' () {
+    def 'should use a singleton Interpreter' () {
         expect:
         jep
     }
@@ -54,33 +57,42 @@ class QuiltPackageTest extends QuiltSpecification {
     def 'should create unique Package for associated Paths' () {
         given:
         def pkgPath = qpath.getPackage()
-        def pkg2 = QuiltPackage.ForPath(pkgPath)
+        def pkg2 = pkgPath.pkg()
 
         expect:
         pkg != null
-        pkg.toString() == "bucket_pkg_name"
-        pkgPath.toString() == "quilt://bucket/pkg/name/"
+        pkg.toString() == "quilt_example_examples_hurdat"
+        pkgPath.toString() == pkg_url
         pkg == pkg2
     }
 
     def 'should distinguish Packages with same name in different Buckets ' () {
         given:
-        def path2 = path.replace('bucket','bucket2')
-        def qpath2 = factory.parseUri(path2)
-        def pkg2 = QuiltPackage.ForPath(qpath2)
+        def url2 = url.replace('-example','-example2')
+        def qpath2 = factory.parseUri(url2)
+        def pkg2 = qpath2.pkg()
 
         expect:
-        path2.toString().contains('bucket2')
+        url2.toString().contains('-example2')
         pkg != pkg2
         pkg.toString() != pkg2.toString()
+
+        !Files.exists(qpath2.installPath())
     }
 
-    def 'Package should install into a staging directory' () {
+    def 'should create an install folder ' () {
         given:
-        String tmpdir = Files.createTempDirectory("tmpDirPrefix").toFile().getAbsolutePath()
+        Path installPath = pkg.installPath()
         String tmpDirsLocation = System.getProperty("java.io.tmpdir")
         expect:
-        tmpdir.startsWith(tmpDirsLocation)
+        installPath.toString().startsWith(tmpDirsLocation)
+        Files.exists(installPath)
+    }
+
+    def 'should install and attribute files ' () {
+        expect:
+        pkg.install()
+        Files.exists(qpath.installPath())
     }
 
     def 'Package should return Attributes IFF the file exists' () {

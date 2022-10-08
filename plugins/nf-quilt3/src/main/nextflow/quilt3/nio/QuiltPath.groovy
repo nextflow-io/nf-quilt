@@ -16,6 +16,7 @@
 
 package nextflow.quilt3.nio
 
+import nextflow.quilt3.jep.QuiltPackage
 import java.nio.file.FileSystem
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -39,17 +40,17 @@ import nextflow.quilt3.QuiltOpts
 @Slf4j
 @CompileStatic
 public final class QuiltPath implements Path {
-    final public static String SEP = '/'
+    public static final String SEP = '/'
 
-    private QuiltFileSystem filesystem
-    private String pkg_name
-    private String[] names
-    private Map<String,Object> options
+    private final QuiltFileSystem filesystem
+    private final String pkg_name
+    private final String[] names
+    private final Map<String,Object> options
 
-    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String filepath, Map<String,Object> options) {
+    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String file_key, Map<String,Object> options) {
         this.filesystem = filesystem
         this.pkg_name = pkg_name
-        this.names = filepath ? filepath.split(SEP) : new String[0]
+        this.names = file_key ? file_key.split(SEP) : new String[0]
         this.options = options
     }
 
@@ -61,8 +62,17 @@ public final class QuiltPath implements Path {
         return pkg_name
     }
 
-    public String filepath() {
+    public QuiltPackage pkg() {
+        return QuiltPackage.ForPath(this)
+    }
+
+    public String file_key() {
         return names.join(SEP)
+    }
+
+    Path installPath() {
+        Path pkgPath = pkg().installPath()
+        Paths.get(pkgPath.toString(), file_key())
     }
 
     public Object option(key) {
@@ -172,7 +182,7 @@ public final class QuiltPath implements Path {
 
     @Override
     Path relativize(Path other) {
-        new QuiltPath(filesystem, null, filepath(), options)
+        new QuiltPath(filesystem, null, file_key(), options)
     }
 
     @Override

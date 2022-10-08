@@ -43,7 +43,7 @@ class QuiltPathFactory extends FileSystemPathFactory {
     @Override
     protected String toUriString(Path p) {
       if( p instanceof QuiltPath ) {
-          return "quilt://${p.bucket()}/${p.pkg_name()}/${p.filepath()}".toString()
+          return "quilt://${p.bucket()}/${p.pkg_name()}/${p.file_key()}".toString()
       }
       return null
     }

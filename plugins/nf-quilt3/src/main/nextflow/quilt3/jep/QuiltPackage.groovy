@@ -24,6 +24,8 @@ import jep.Interpreter;
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
 import groovy.util.logging.Slf4j
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
 @Slf4j
@@ -31,11 +33,13 @@ import java.nio.file.Paths
 class QuiltPackage {
     static JavaEmbedPython jep = JavaEmbedPython.WithModules(['quilt3'])
 
-    static private Map<String,QuiltPackage> packages = [:]
-    static public String installFolder = ".quilt"
+    private static final Map<String,QuiltPackage> packages = [:]
+    private static final String installPrefix = "QuiltPackage"
+    public static final Path installParent = Files.createTempDirectory(installPrefix)
 
-    private String bucket
-    private String pkg_name
+    private final String bucket
+    private final String pkg_name
+    private final Path folder
     private boolean installed
 
     static public QuiltPackage ForPath(QuiltPath path) {
@@ -51,20 +55,32 @@ class QuiltPackage {
     QuiltPackage(String bucket, String pkg_name) {
         this.bucket = bucket
         this.pkg_name = pkg_name
+        this.folder = Paths.get(installParent.toString(), this.toString())
+        Files.createDirectories(this.folder)
         this.installed = false
+    }
+
+    Path install() {
+        String dest = "dest='${installPath()}'"
+        String registry = "'s3://${bucket}'"
+        String pkg = "'${pkg_name}'"
+        List<String> args = [pkg,registry,dest]
+        String cmd = JavaEmbedPython.MakeCall('quilt3.Package','install',args)
+        jep.setValue(toString(), cmd)
+        installPath()
     }
 
     boolean isInstalled() {
         installed
     }
 
-    String installPath() {
-        Paths.get(installFolder, toString()).toString()
+    Path installPath() {
+        folder
     }
 
     @Override
     String toString() {
-        "${bucket}_${pkg_name}".replace("/","_")
+        "${bucket}_${pkg_name}".replaceAll(/[-\/]/,'_')
     }
 
 }

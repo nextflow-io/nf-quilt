@@ -35,7 +35,7 @@ import nextflow.util.Escape
 @CompileStatic
 class QuiltFileCopyStrategy extends SimpleFileCopyStrategy {
 
-    TaskBean task
+    final TaskBean task
 
     QuiltFileCopyStrategy(TaskBean bean) {
         super(bean)

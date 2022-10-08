@@ -32,7 +32,7 @@ import groovy.util.logging.Slf4j
  @Slf4j
  @CompileStatic
  class QuiltFileAttributes implements BasicFileAttributes {
-     private final FileTime lastModifiedTime;
+    private final FileTime lastModifiedTime;
  	private final long size;
  	private final boolean directory;
  	private final boolean regularFile;

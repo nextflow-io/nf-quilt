@@ -27,7 +27,7 @@ import java.nio.file.attribute.FileTime
  */
 class QuiltFileAttributesView implements BasicFileAttributeView {
 
-    private QuiltFileAttributes target;
+    private final QuiltFileAttributes target;
 
     QuiltFileAttributesView(QuiltFileAttributes target) {
         this.target = target;

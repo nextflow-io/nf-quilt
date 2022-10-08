@@ -89,9 +89,9 @@ class JavaEmbedPythonTest extends QuiltSpecification {
 
     def 'should construct method calls'() {
         when:
-        def call = JavaEmbedPython.makeCall(null, "print","'four'","2 + 2")
-        def mcall = JavaEmbedPython.makeCall('Math', 'sqrt',"2 + 2")
-        def ncall = JavaEmbedPython.makeCall('Math', 'Pi')
+        def call = JavaEmbedPython.MakeCall(null, "print",["'four'","2 + 2"])
+        def mcall = JavaEmbedPython.MakeCall('Math', 'sqrt',["2 + 2"])
+        def ncall = JavaEmbedPython.MakeCall('Math', 'Pi')
         then:
         call == "print('four',2 + 2)"
         mcall == "Math.sqrt(2 + 2)"
