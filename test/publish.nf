@@ -2,9 +2,8 @@
 
 nextflow.enable.dsl=2
 
-params.registry = 's3://quilt-ernest-staging'
-params.input = 'nf-quilt/input'
-params.output = 'nf-quilt/output'
+params.registry = 's3://quilt-example'
+params.input = 'examples/hurdat'
 params.indir = 'input'
 params.outdir = 'output'
 params.pubdir = '/tmp/nf-quilt'
@@ -36,7 +35,7 @@ process download {
 }
 
 process pub {
-  publishDir params.pubdir
+  publishDir params.pubdir, mode: 'copy', overwrite: true
 
   input:
     file params.indir

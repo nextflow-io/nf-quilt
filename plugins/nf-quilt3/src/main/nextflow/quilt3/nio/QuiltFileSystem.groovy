@@ -16,6 +16,7 @@
 
 package nextflow.quilt3.nio
 
+import java.nio.channels.Channels
 import java.nio.channels.SeekableByteChannel
 import java.nio.file.FileSystem
 import java.nio.file.FileStore
@@ -94,16 +95,6 @@ public final class QuiltFileSystem extends FileSystem {
 
     boolean exists(QuiltPath path) {
         return false
-    }
-
-    SeekableByteChannel newReadableByteChannel(QuiltPath path) {
-        log.info "Mocking call to `newReadableByteChannel`: ${path}"
-        null
-    }
-
-    SeekableByteChannel newWritableByteChannel(QuiltPath path) {
-        log.info "Mocking call to `newWritableByteChannel`: ${path}"
-        null
     }
 
     Iterable<? extends Path> getRootDirectories() {

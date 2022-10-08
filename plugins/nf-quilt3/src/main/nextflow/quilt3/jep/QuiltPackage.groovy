@@ -78,6 +78,11 @@ class QuiltPackage {
         folder
     }
 
+    boolean push() {
+        log.info "Mock `push` $this"
+        true
+    }
+
     @Override
     String toString() {
         "${bucket}_${pkg_name}".replaceAll(/[-\/]/,'_')

@@ -19,12 +19,14 @@ package nextflow.quilt3.nio
 import static java.nio.file.StandardCopyOption.*
 import static java.nio.file.StandardOpenOption.*
 
-import java.nio.channels.SeekableByteChannel
+import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.AccessDeniedException
 import java.nio.file.AccessMode
 import java.nio.file.CopyOption
 import java.nio.file.DirectoryStream
 import java.nio.file.FileAlreadyExistsException
+import java.nio.file.Files
 import java.nio.file.FileStore
 import java.nio.file.FileSystem
 import java.nio.file.FileSystemAlreadyExistsException
@@ -32,8 +34,10 @@ import java.nio.file.FileSystemNotFoundException
 import java.nio.file.LinkOption
 import java.nio.file.NoSuchFileException
 import java.nio.file.NotDirectoryException;
-import java.nio.file.OpenOption
-import java.nio.file.Path
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileAttribute
@@ -44,6 +48,8 @@ import java.nio.file.spi.FileSystemProvider
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
 import groovy.util.logging.Slf4j
+import nextflow.Global
+import nextflow.Session
 /**
  * Implements NIO File system provider for Quilt Blob Storage
  *
@@ -268,46 +274,45 @@ class QuiltFileSystemProvider extends FileSystemProvider {
             throw new UnsupportedOperationException("Operation 'checkRoot' not supported on root path")
     }
 
+
+    /**
+    * Open a file for reading or writing. To read receiver-pays buckets, specify the
+    * BlobSourceOption.userProject option.
+    *
+    * @param path: the path to the file to open or create
+    * @param options: options specifying how the file is opened, e.g. StandardOpenOption.WRITE or
+    *     BlobSourceOption.userProject
+    * @param attrs: (not supported, values will be ignored)
+    * @return
+    * @throws IOException
+    */
+    protected void notifyFilePublish(QuiltPath destination) {
+        final sess = Global.session
+        if (sess instanceof Session) {
+            sess.notifyFilePublish(destination)
+        }
+    }
+
     @Override
-    SeekableByteChannel newByteChannel(Path obj, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-        log.info "Faking call to `newByteChannel`: ${obj}"
-        checkRoot(obj)
-
+    public SeekableByteChannel newByteChannel(
+      Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
+        log.info "Creating `newByteChannel`: ${path} <- ${options}"
         final modeWrite = options.contains(WRITE) || options.contains(APPEND)
-        final modeRead = options.contains(READ) || !modeWrite
 
-        if( modeRead && modeWrite ) {
-            throw new IllegalArgumentException("Quilt Blob Storage file cannot be opened in R/W mode at the same time")
+        final qPath = asQuiltPath(path)
+        Path installPath = qPath.installPath()
+        Path parent = installPath.getParent()
+        Files.createDirectories(parent)
+        try {
+            def channel = FileChannel.open(installPath, options)
+            if (modeWrite) {
+                notifyFilePublish(qPath)
+            }
+            return channel
         }
-        if( options.contains(APPEND) ) {
-            throw new IllegalArgumentException("Quilt Blob Storage file system does not support `APPEND` mode")
+        catch (java.nio.file.NoSuchFileException e) {
+            log.error "Failed `FileChannel.open`: ${installPath} <- ${options}"
         }
-        if( options.contains(SYNC) ) {
-            throw new IllegalArgumentException("Quilt Blob Storage file system does not support `SYNC` mode")
-        }
-        if( options.contains(DSYNC) ) {
-            throw new IllegalArgumentException("Quilt Blob Storage file system does not support `DSYNC` mode")
-        }
-
-        final path = asQuiltPath(obj)
-        final fs = getQuiltFilesystem(obj)
-        if( modeRead ) {
-            return fs.newReadableByteChannel(path)
-        }
-
-        // -- mode write
-        if( options.contains(CREATE_NEW) ) {
-            if( fs.exists(path) )
-                throw new FileAlreadyExistsException(path.toUriString())
-        }
-        else if( !options.contains(CREATE)  ) {
-            if( !fs.exists(path) )
-                throw new NoSuchFileException(path.toUriString())
-        }
-        if( options.contains(APPEND) ) {
-            throw new IllegalArgumentException("File APPEND mode is not supported by Azure Blob Storage")
-        }
-        return fs.newWritableByteChannel(path)
     }
 
     private List<Path> listFiles(Path dir, DirectoryStream.Filter<? super Path> filter ) {
@@ -335,7 +340,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     void createDirectory(Path dir, FileAttribute<?>... attrs) throws IOException {
-        log.info "Ignoring call to `createDirectory`: ${dir}"
+        final path = asQuiltPath(dir)
+        log.debug "Calling `createDirectory`: ${dir}"
+        path.pkg()
     }
 
     @Override
@@ -344,7 +351,6 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         final path = asQuiltPath(obj)
         getQuiltFilesystem(path).delete(path)
     }
-
 
     @Override
     void copy(Path from, Path to, CopyOption... options) throws IOException {
@@ -398,16 +404,14 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     def <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-        throw new NoSuchFileException(path.toUriString())
 
         if( type == BasicFileAttributes || type == QuiltFileAttributes ) {
-            log.info "Mocking call to `readAttributes`: ${path}"
+            log.info "Calling `readAttributes`: ${path}"
             def qPath = asQuiltPath(path)
-            def key = qPath.toString()
-            def lastModifiedTime = FileTime.fromMillis(1_000_000_000_000)
-            def size = 1000
-            def isPackage = qPath.isPackage()
-            return (A) new QuiltFileAttributes(key, lastModifiedTime, size, isPackage, !isPackage);
+            if ( qPath. pkg().isInstalled() ) {
+                return (A) Files.getFileAttributeView(qPath.installPath(), QuiltFileAttributesView.class)
+            }
+            throw new NoSuchFileException(path.toUriString())
         }
         throw new UnsupportedOperationException("Not a valid Quilt Storage file attribute type: $type")
     }
