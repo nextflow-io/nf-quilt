@@ -24,15 +24,15 @@ import nextflow.Session
 
 /*
 //import  .py doc with to run
-subInterp.eval("import python_functions as p");
+interp.eval("import python_functions as p");
 
 // run each function from the .py doc I
-subInterp.eval("res_spacy = p.run_spacy_nlp('Apple is looking at buying U.K. startup for one billion')");
-System.out.println(subInterp.getValue("res_spacy"));
+interp.eval("res_spacy = p.run_spacy_nlp('Apple is looking at buying U.K. startup for one billion')");
+System.out.println(interp.getValue("res_spacy"));
 
 //II
-subInterp.eval("res_c = p.get_c_path('.idea','*.xml')");
-System.out.println(subInterp.getValue("res_c"));
+interp.eval("res_c = p.get_c_path('.idea','*.xml')");
+System.out.println(interp.getValue("res_c"));
 */
 
 /**

@@ -19,13 +19,14 @@
 
 package nextflow.quilt3.jep
 
-import jep.JepConfig;
-import jep.MainInterpreter;
-import jep.SubInterpreter;
+import jep.JepConfig
+import jep.MainInterpreter
+import jep.SubInterpreter
+import jep.Interpreter
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
+import java.nio.file.Files
+import java.nio.file.Path
+import java.util.ArrayList
 
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
@@ -42,7 +43,7 @@ class JavaEmbedPython {
     protected static JavaEmbedPython jep = new JavaEmbedPython()
 
     private final JepConfig config
-    private final SubInterpreter subInterp
+    private final Interpreter interp
 
 
     static public String MakeCall(String obj, String method, List<String> args = []) {
@@ -88,7 +89,7 @@ class JavaEmbedPython {
         String jepPath = findJepPath() // set path for jep executing python3.9
         MainInterpreter.setJepLibraryPath(jepPath) //initialize the MainInterpreter
         this.config = new JepConfig()
-        this.subInterp = config.createSubInterpreter() //create the interpreter for python executing
+        this.interp = config.createSubInterpreter() //create the interpreter for python executing
     }
 
     void addSourceDir(String sourceDir) {
@@ -98,19 +99,19 @@ class JavaEmbedPython {
 
     void eval(String python_script) {
         log.debug('eval', python_script)
-        subInterp.eval(python_script);
+        interp.eval(python_script);
     }
 
     void import_module(String module) {
-        subInterp.eval("import $module");
+        interp.eval("import $module");
     }
 
     Object getValue(String variable) {
-        subInterp.getValue(variable);
+        interp.getValue(variable);
     }
 
     Object setValue(String variable, String expression) {
-        subInterp.eval("${variable} = ${expression}");
+        interp.eval("${variable} = ${expression}");
     }
 
 }

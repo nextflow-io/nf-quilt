@@ -28,6 +28,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+import java.text.SimpleDateFormat
+import java.util.Date
+
 @Slf4j
 @CompileStatic
 class QuiltPackage {
@@ -52,21 +55,64 @@ class QuiltPackage {
         return pkg
     }
 
+    static public String today() {
+        Date dateObj =  new Date()
+        new SimpleDateFormat('yyyy-MM-dd').format(dateObj)
+    }
+
     QuiltPackage(String bucket, String pkg_name) {
         this.bucket = bucket
         this.pkg_name = pkg_name
         this.folder = Paths.get(installParent.toString(), this.toString())
         Files.createDirectories(this.folder)
         this.installed = false
+        set_self()
+    }
+
+    Object set_self() {
+        jep.setValue(toString(), 'quilt3.Package()')
+    }
+
+    String arg_name() {
+        "'${pkg_name}'"
+    }
+
+    String arg_registry() {
+        "'s3://${bucket}'"
+    }
+
+    String key_dest() {
+        "dest='${installPath()}'"
+    }
+
+    String key_force() {
+        "force=True"
+    }
+
+    String key_msg(prefix="") {
+        "message='${prefix}@${today()}'"
+    }
+
+    String key_name() {
+        "name='${pkg_name}'"
+    }
+
+    String key_path() {
+        "path='${installPath()}'"
+    }
+
+    String key_registry() {
+        "registry='s3://${bucket}'"
+    }
+
+    Object call(String op, List<String> args = []) {
+        String cmd = JavaEmbedPython.MakeCall(toString(),op,args)
+        log.debug "`call` ${this}: ${cmd}"
+        jep.eval(cmd)
     }
 
     Path install() {
-        String dest = "dest='${installPath()}'"
-        String registry = "'s3://${bucket}'"
-        String pkg = "'${pkg_name}'"
-        List<String> args = [pkg,registry,dest]
-        String cmd = JavaEmbedPython.MakeCall('quilt3.Package','install',args)
-        jep.setValue(toString(), cmd)
+        call('install',[arg_name(),arg_registry(),key_dest()])
         installPath()
     }
 
@@ -79,8 +125,17 @@ class QuiltPackage {
     }
 
     boolean push() {
-        log.info "Mock `push` $this"
-        true
+        log.info "`push` $this"
+        try {
+            call('browse',[key_name(),key_registry()])
+            call('set_dir',["'/'",key_path()])
+            call('push',[key_name(),key_registry(),key_force()])
+        }
+        catch (Exception e) {
+            log.error "Failed `push` ${this}: ${e}"
+            return false
+        }
+        return true
     }
 
     @Override

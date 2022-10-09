@@ -28,6 +28,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+
 /**
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
@@ -39,8 +40,9 @@ class QuiltPackageTest extends QuiltSpecification {
     QuiltPackage pkg
 
     static JavaEmbedPython jep = JavaEmbedPython.WithModules(['quilt3'])
-    static String pkg_url = 'quilt://quilt-example/examples/hurdat/'
-    static String url = pkg_url + '/scripts/build.py?hash=058e62ccfa'
+    static String pkg_url = 'quilt://quilt-dev-null/test/nf-quilt/'
+    static String url = pkg_url + '/README.md?hash=b744ee498f'
+    static String out_url = 'quilt://quilt-ernest-staging/nf-quilt/test'
 
     def setup() {
         factory = new QuiltPathFactory()
@@ -61,19 +63,19 @@ class QuiltPackageTest extends QuiltSpecification {
 
         expect:
         pkg != null
-        pkg.toString() == "quilt_example_examples_hurdat"
+        pkg.toString() == "quilt_dev_null_test_nf_quilt"
         pkgPath.toString() == pkg_url
         pkg == pkg2
     }
 
     def 'should distinguish Packages with same name in different Buckets ' () {
         given:
-        def url2 = url.replace('-example','-example2')
+        def url2 = url.replace('-dev','-dev2')
         def qpath2 = factory.parseUri(url2)
         def pkg2 = qpath2.pkg()
 
         expect:
-        url2.toString().contains('-example2')
+        url != url2
         pkg != pkg2
         pkg.toString() != pkg2.toString()
 
@@ -89,11 +91,32 @@ class QuiltPackageTest extends QuiltSpecification {
         Files.exists(installPath)
     }
 
-    def 'should install and attribute files ' () {
+    def 'should install files ' () {
+        // and attribute
         expect:
         pkg.install()
         Files.exists(qpath.installPath())
     }
+
+    def 'should write new files back to bucket ' () {
+        given:
+        def cleanDate = QuiltPackage.today()
+        def qout = factory.parseUri(out_url)
+        def opkg = qpath.pkg()
+        def outPath = Paths.get(opkg.installPath().toString(), "${cleanDate}.txt")
+        // push to bucket
+        // remove path
+        // re-install package
+        // verify file exists
+        Files.writeString(outPath, cleanDate);
+        expect:
+        Files.exists(outPath)
+        opkg.push()
+        //opkg.uninstall()
+        //!Files.exists(outPath)
+        //pkg.isInstalled()
+    }
+
 
     def 'Package should return Attributes IFF the file exists' () {
     }
