@@ -30,6 +30,7 @@ import java.util.ArrayList
 
 import groovy.transform.CompileStatic
 import groovy.transform.Memoized
+import groovy.transform.Synchronized
 import groovy.util.logging.Slf4j
 
 @Slf4j
@@ -40,11 +41,13 @@ class JavaEmbedPython {
 
     protected static final String MACOS_LIB = "/jep/libjep.jnilib"
     protected static final String LINUX_LIB = "/jep/libjep.so"
-    protected static JavaEmbedPython jep = new JavaEmbedPython()
+    protected static final JepConfig config = setupJEP()
 
-    private final JepConfig config
-    private final Interpreter interp
-
+    static private JepConfig setupJEP() {
+        String jepPath = findJepPath() // set path for jep executing python3.9
+        MainInterpreter.setJepLibraryPath(jepPath) //initialize the MainInterpreter
+        new JepConfig()
+    }
 
     static public String MakeCall(String obj, String method, List<String> args = []) {
         def cmd = obj ? "${obj}.${method}" : method
@@ -76,20 +79,17 @@ class JavaEmbedPython {
         path
     }
 
-    static public JavaEmbedPython Context() {
-        jep
+    private final SubInterpreter interp
+
+    JavaEmbedPython(List<String> modules) {
+        this.interp = config.createSubInterpreter()
+        modules.each { this.import_module(it) }
     }
 
-    static public JavaEmbedPython WithModules(List<String> modules) {
-        modules.each { jep.import_module(it) }
-        jep
-    }
-
-    private JavaEmbedPython() {
-        String jepPath = findJepPath() // set path for jep executing python3.9
-        MainInterpreter.setJepLibraryPath(jepPath) //initialize the MainInterpreter
-        this.config = new JepConfig()
-        this.interp = config.createSubInterpreter() //create the interpreter for python executing
+    @Synchronized
+    void close() {
+        log.info "Closing interpreter ${interp.getThreadState()}"
+        interp.close()
     }
 
     void addSourceDir(String sourceDir) {
@@ -97,21 +97,25 @@ class JavaEmbedPython {
         this.config.addIncludePaths(sourcePath)
     }
 
+    @Synchronized
     void eval(String python_script) {
         log.debug('eval', python_script)
-        interp.eval(python_script);
+        interp.exec(python_script);
     }
 
+    @Synchronized
     void import_module(String module) {
-        interp.eval("import $module");
+        eval("import $module");
     }
 
+    @Synchronized
     Object getValue(String variable) {
         interp.getValue(variable);
     }
 
+    @Synchronized
     Object setValue(String variable, String expression) {
-        interp.eval("${variable} = ${expression}");
+        eval("${variable} = ${expression}");
     }
 
 }

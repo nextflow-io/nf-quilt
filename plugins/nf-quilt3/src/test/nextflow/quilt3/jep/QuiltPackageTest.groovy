@@ -39,7 +39,6 @@ class QuiltPackageTest extends QuiltSpecification {
     QuiltPath qpath
     QuiltPackage pkg
 
-    static JavaEmbedPython jep = JavaEmbedPython.WithModules(['quilt3'])
     static String pkg_url = 'quilt://quilt-dev-null/test/nf-quilt/'
     static String url = pkg_url + '/README.md?hash=b744ee498f'
     static String out_url = 'quilt://quilt-ernest-staging/nf-quilt/test'
@@ -51,11 +50,6 @@ class QuiltPackageTest extends QuiltSpecification {
     }
 
     @Unroll
-    def 'should use a singleton Interpreter' () {
-        expect:
-        jep
-    }
-
     def 'should create unique Package for associated Paths' () {
         given:
         def pkgPath = qpath.getPackage()

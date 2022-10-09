@@ -21,6 +21,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import nextflow.Global
 import nextflow.Session
+import spock.lang.Shared
 
 /*
 //import  .py doc with to run
@@ -40,13 +41,6 @@ System.out.println(interp.getValue("res_c"));
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
 class JavaEmbedPythonTest extends QuiltSpecification {
-    static JavaEmbedPython jep = JavaEmbedPython.Context()
-
-    def 'should be able to compile and run wrapper class'() {
-        expect:
-        jep
-    }
-
     def 'should findPythonPath'() {
         when:
         def path = nextflow.quilt3.jep.JavaEmbedPython.findPythonPath()
@@ -61,32 +55,6 @@ class JavaEmbedPythonTest extends QuiltSpecification {
         path.contains("jep")
     }
 
-    def 'should import quilt'() {
-        expect:
-        jep.import_module("quilt3")
-    }
-
-    def 'should evaluate expressions'() {
-        when:
-        jep.setValue("x", "2 + 2")
-        and:
-        def x = jep.getValue("x")
-        then:
-        x == 4
-    }
-
-    def 'should return quilt config as Map'() {
-        when:
-        def j2 = JavaEmbedPython.WithModules(['quilt3'])
-        and:
-        j2.setValue("cf", "quilt3.config(navigator_url='https://example.com')")
-        and:
-        def config = j2.getValue("cf")
-        then:
-        config['default_local_registry'].contains("packages")
-        config['navigator_url'] == 'https://example.com'
-    }
-
     def 'should construct method calls'() {
         when:
         def call = JavaEmbedPython.MakeCall(null, "print",["'four'","2 + 2"])
@@ -98,4 +66,42 @@ class JavaEmbedPythonTest extends QuiltSpecification {
         ncall == "Math.Pi()"
     }
 
+    def 'should be able to instantiate'() {
+        given:
+        def jep = new JavaEmbedPython([])
+        expect:
+        jep
+        jep.close()
+    }
+
+    def 'should import quilt'() {
+        given:
+        def jep = new JavaEmbedPython([])
+        expect:
+        jep.import_module("quilt3")
+        jep.close()
+    }
+
+    def 'should evaluate expressions'() {
+        given:
+        def jep = new JavaEmbedPython([])
+        when:
+        jep.setValue("x", "2 + 2")
+        and:
+        def x = jep.getValue("x")
+        then:
+        x == 4
+        jep.close()
+    }
+
+    def 'should return quilt config as Map'() {
+        when:
+        def j2 = new JavaEmbedPython(['quilt3'])
+        j2.setValue("cf", "quilt3.config(navigator_url='https://example.com')")
+        def config = j2.getValue("cf")
+        then:
+        config['default_local_registry'].contains("packages")
+        config['navigator_url'] == 'https://example.com'
+        j2.close()
+    }
 }

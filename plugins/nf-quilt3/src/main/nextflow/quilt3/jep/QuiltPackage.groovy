@@ -34,8 +34,6 @@ import java.util.Date
 @Slf4j
 @CompileStatic
 class QuiltPackage {
-    static JavaEmbedPython jep = JavaEmbedPython.WithModules(['quilt3'])
-
     private static final Map<String,QuiltPackage> packages = [:]
     private static final String installPrefix = "QuiltPackage"
     public static final Path installParent = Files.createTempDirectory(installPrefix)
@@ -44,6 +42,7 @@ class QuiltPackage {
     private final String pkg_name
     private final Path folder
     private boolean installed
+    private JavaEmbedPython jep
 
     static public QuiltPackage ForPath(QuiltPath path) {
         def pkgKey = path.getPackage().toString()
@@ -66,11 +65,16 @@ class QuiltPackage {
         this.folder = Paths.get(installParent.toString(), this.toString())
         Files.createDirectories(this.folder)
         this.installed = false
-        set_self()
     }
 
-    Object set_self() {
+    Object jep_begin() {
+        this.jep = new JavaEmbedPython(['quilt3'])
         jep.setValue(toString(), 'quilt3.Package()')
+    }
+    
+    void jep_end() {
+        jep.close()
+        this.jep = null
     }
 
     String arg_name() {
@@ -106,13 +110,18 @@ class QuiltPackage {
     }
 
     Object call(String op, List<String> args = []) {
+        if ( !jep ) {
+            throw new IllegalArgumentException("JavaEmbedPython not initialized")
+        }
         String cmd = JavaEmbedPython.MakeCall(toString(),op,args)
         log.debug "`call` ${this}: ${cmd}"
         jep.eval(cmd)
     }
 
     Path install() {
+        jep_begin()
         call('install',[arg_name(),arg_registry(),key_dest()])
+        jep_end()
         installPath()
     }
 
@@ -127,9 +136,11 @@ class QuiltPackage {
     boolean push() {
         log.info "`push` $this"
         try {
+            jep_begin()
             call('browse',[key_name(),key_registry()])
             call('set_dir',["'/'",key_path()])
             call('push',[key_name(),key_registry(),key_force()])
+            jep_end()
         }
         catch (Exception e) {
             log.error "Failed `push` ${this}: ${e}"

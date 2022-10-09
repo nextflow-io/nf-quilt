@@ -16,8 +16,7 @@
 
 package nextflow.quilt3
 
-
-import spock.lang.Specification
+import nextflow.quilt3.jep.JavaEmbedPython
 
 import java.nio.file.FileSystem
 import java.nio.file.Paths
@@ -33,6 +32,7 @@ import org.pf4j.PluginDescriptorFinder
 import groovy.util.logging.Slf4j
 import spock.lang.Shared
 import spock.lang.Timeout
+import spock.lang.Specification
 
 /**
  *
@@ -42,7 +42,7 @@ abstract class QuiltSpecification extends Specification {
 
     @Shared String pluginsMode
 
-    def setup() {
+    def setupSpec() {
         // reset previous instances
         PluginExtensionProvider.reset()
         // this need to be set *before* the plugin manager class is created
@@ -65,7 +65,7 @@ abstract class QuiltSpecification extends Specification {
         Plugins.startIfMissing('nf-quilt3')
     }
 
-    def cleanup() {
+    def cleanupSpec() {
         Plugins.stop()
         PluginExtensionProvider.reset()
         pluginsMode ? System.setProperty('pf4j.mode',pluginsMode) : System.clearProperty('pf4j.mode')
