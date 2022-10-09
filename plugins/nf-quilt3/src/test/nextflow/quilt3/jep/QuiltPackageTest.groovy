@@ -88,6 +88,7 @@ class QuiltPackageTest extends QuiltSpecification {
     def 'should install files ' () {
         // and attribute
         expect:
+        !Files.exists(qpath.installPath())
         pkg.install()
         Files.exists(qpath.installPath())
     }

@@ -16,8 +16,6 @@
 
 package nextflow.quilt3
 
-import nextflow.quilt3.jep.JavaEmbedPython
-
 import java.nio.file.FileSystem
 import java.nio.file.Paths
 import java.nio.file.Path

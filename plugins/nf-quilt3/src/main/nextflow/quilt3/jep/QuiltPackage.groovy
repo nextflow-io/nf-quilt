@@ -30,6 +30,7 @@ import java.nio.file.Paths
 
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.lang.ProcessBuilder
 
 @Slf4j
 @CompileStatic
@@ -42,7 +43,6 @@ class QuiltPackage {
     private final String pkg_name
     private final Path folder
     private boolean installed
-    private JavaEmbedPython jep
 
     static public QuiltPackage ForPath(QuiltPath path) {
         def pkgKey = path.getPackage().toString()
@@ -67,61 +67,49 @@ class QuiltPackage {
         this.installed = false
     }
 
-    Object jep_begin() {
-        this.jep = new JavaEmbedPython(['quilt3'])
-        jep.setValue(toString(), 'quilt3.Package()')
-    }
-    
-    void jep_end() {
-        jep.close()
-        this.jep = null
-    }
-
-    String arg_name() {
-        "'${pkg_name}'"
-    }
-
-    String arg_registry() {
-        "'s3://${bucket}'"
-    }
-
     String key_dest() {
-        "dest='${installPath()}'"
+        "--dest ${installPath()}"
     }
+
+    String key_dir() {
+        "--dir ${installPath()}"
+    }
+
 
     String key_force() {
-        "force=True"
+        "--force true"
     }
 
     String key_msg(prefix="") {
-        "message='${prefix}@${today()}'"
-    }
-
-    String key_name() {
-        "name='${pkg_name}'"
+        "--message ${prefix}@${today()}"
     }
 
     String key_path() {
-        "path='${installPath()}'"
+        "--path=${installPath()}"
     }
 
     String key_registry() {
-        "registry='s3://${bucket}'"
+        "--registry s3://${bucket}"
     }
 
-    Object call(String op, List<String> args = []) {
-        if ( !jep ) {
-            throw new IllegalArgumentException("JavaEmbedPython not initialized")
-        }
-        String cmd = JavaEmbedPython.MakeCall(toString(),op,args)
-        log.debug "`call` ${this}: ${cmd}"
-        jep.eval(cmd)
+    Object call(String... args) {
+        def command = ['quilt3']
+        command.addAll(args)
+        def cmd = command.join(" ")
+        log.info "call `${cmd}`"
+
+        ProcessBuilder pb = new ProcessBuilder('bash','-c', cmd)
+        pb.redirectErrorStream(true);
+
+        Process p = pb.start();
+        String result = new String(p.getInputStream().readAllBytes());
+        int exitCode = p.waitFor();
+        log.info "`call.exitCode` ${exitCode}: ${result}"
     }
 
+    // usage: quilt3 install [-h] [--registry REGISTRY] [--top-hash TOP_HASH] [--dest DEST] [--dest-registry DEST_REGISTRY] [--path PATH] name
     Path install() {
-        jep_begin()
-        call('install',[arg_name(),arg_registry(),key_dest()])
-        jep_end()
+        call('install',pkg_name,key_registry(),key_dest())
         installPath()
     }
 
@@ -133,14 +121,11 @@ class QuiltPackage {
         folder
     }
 
+    // https://docs.quiltdata.com/v/version-5.0.x/examples/gitlike#install-a-package
     boolean push() {
         log.info "`push` $this"
         try {
-            jep_begin()
-            call('browse',[key_name(),key_registry()])
-            call('set_dir',["'/'",key_path()])
-            call('push',[key_name(),key_registry(),key_force()])
-            jep_end()
+            call('push',pkg_name,key_dir(),key_registry(),key_msg("update"))
         }
         catch (Exception e) {
             log.error "Failed `push` ${this}: ${e}"

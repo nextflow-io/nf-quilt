@@ -21,14 +21,12 @@ plugins {
 
 ### Quilt Configuration
 
-This plugin uses [Java Embedded Python](https://github.com/ninia/jep) to call the Quilt API.
-To use it, your container must install and link to the appropriate libraries:
+This plugin uses the `quilt3` CLI to call the Quilt API.
+You must install the `quilt3` module and ensure the CLI is in your path:
 
 ```bash
-pip3 install quilt3 jep # -r requirements.txt
-export DYLD_LIBRARY_PATH=`pip3 show jep|awk '/^Location/ {print $2}'` # macOS
-export LD_LIBRARY_PATH=`pip3 show jep|awk '/^Location/ {print $2}'` # Linux
-# Do not overwrite if already set: if [ ${1+x} ]; then https://stackoverflow.com/questions/3601515/how-to-check-if-a-variable-is-set-in-bash
+pip3 install quilt3
+which quilt3 #e.g., /usr/local/bin/quilt3
 ```
 
 ### Reading and Writing Quilt URLs
@@ -47,7 +45,7 @@ You can then use that package as input to future jobs, e.g.:
 nextflow run my/analysis --indir quilt://raw-bucket/instrument/experiment --outdir quilt://prod-bucket/analysis/experiment
 ```
 
-## Additional Features
+## Additional Features (TBD)
 
 
 
