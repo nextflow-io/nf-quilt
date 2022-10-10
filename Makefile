@@ -23,16 +23,22 @@ check3: compile
 	./gradlew check || open file:///Users/quilt/Documents/GitHub/nf-quilt/plugins/nf-quilt3/build/reports/tests/test/index.html
 
 run:
-	./launch.sh run nextflow-io/hello -plugins nf-quilt3
+	./launch.sh run nextflow-io/hello -plugins nf-quilt,nf-quilt3
 
 test-pub:
 	mkdir -p /tmp/nf-quilt
-	./launch.sh run test/publish.nf -plugins nf-quilt3
+	./launch.sh run test/publish.nf
 	ls -lR /tmp/nf-quilt
+
+test-quilt:
+	./launch.sh run test/quilt.nf
+
+test-local:
+	./launch.sh run test/quilt.nf --src ~/Downloads/Packages/ernie_igv_demo_ecdcd41/ --pub ~/Downloads/Packages/sprint_2022-09-12
 
 qtest: compile
 	clear
-	./launch.sh run test/publish.nf -plugins nf-quilt3 --pubdir quilt://quilt-ernest-staging/nf-quilt/test-out/
+	./launch.sh run test/publish.nf --pubdir quilt://quilt-ernest-staging/nf-quilt/test-out/
 
 shell:
 	./gradlew -q --no-daemon --console=plain --init-script gradle/groovysh-init.gradle groovysh
