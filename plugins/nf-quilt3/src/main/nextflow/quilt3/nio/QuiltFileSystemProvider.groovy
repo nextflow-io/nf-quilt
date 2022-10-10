@@ -389,6 +389,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     void checkAccess(Path path, AccessMode... modes) throws IOException {
+        log.info "Calling `checkAccess`: ${path}"
         checkRoot(path)
         final qPath = asQuiltPath(path)
         readAttributes(qPath, QuiltFileAttributes.class)
@@ -398,26 +399,34 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     def <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
+        log.info "Calling `getFileAttributeView`: ${path}"
         checkRoot(path)
+        if( type == BasicFileAttributeView || type == QuiltFileAttributesView ) {
+            def qPath = asQuiltPath(path)
+            QuiltFileSystem fs = qPath.filesystem
+            return (V)fs.getFileAttributeView(qPath)
+        }
         throw new UnsupportedOperationException("Operation 'getFileAttributeView' is not supported by QuiltFileSystem")
     }
 
     @Override
     def <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-
+        log.info "Calling BasicFileAttributes `readAttributes`: ${path}"
         if( type == BasicFileAttributes || type == QuiltFileAttributes ) {
-            log.info "Calling `readAttributes`: ${path}"
+            log.info "Calling `readAttributes`: ${type}"
             def qPath = asQuiltPath(path)
-            if ( qPath. pkg().isInstalled() ) {
-                return (A) Files.getFileAttributeView(qPath.installPath(), QuiltFileAttributesView.class)
-            }
-            throw new NoSuchFileException(path.toUriString())
+            QuiltFileSystem fs = qPath.filesystem
+            def result = (A)fs.readAttributes(qPath)
+            if( result )
+                return result
+            throw new NoSuchFileException(qPath.toUriString())
         }
         throw new UnsupportedOperationException("Not a valid Quilt Storage file attribute type: $type")
     }
 
     @Override
     Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
+        log.info "Calling Map<String, Object> `readAttributes`: ${path}"
         throw new UnsupportedOperationException("Operation Map 'readAttributes' is not supported by QuiltFileSystem")
     }
 

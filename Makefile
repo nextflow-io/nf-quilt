@@ -30,7 +30,7 @@ test-pub:
 	./launch.sh run test/publish.nf
 	ls -lR /tmp/nf-quilt
 
-test-quilt:
+test-quilt: compile
 	./launch.sh run test/quilt.nf
 
 test-local:

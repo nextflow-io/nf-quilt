@@ -17,6 +17,7 @@
 package nextflow.quilt3.nio
 
 import static java.lang.String.format;
+import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributeView
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
@@ -29,62 +30,58 @@ import groovy.util.logging.Slf4j
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
 
- @Slf4j
- @CompileStatic
- class QuiltFileAttributes implements BasicFileAttributes {
-    private final FileTime lastModifiedTime;
- 	private final long size;
- 	private final boolean directory;
- 	private final boolean regularFile;
- 	private final String key;
+@Slf4j
+@CompileStatic
+class QuiltFileAttributes implements BasicFileAttributes {
+    private final Path path;
+    private final String key;
+    private final BasicFileAttributes attrs;
 
- 	public QuiltFileAttributes(String key, FileTime lastModifiedTime, long size,
- 			boolean isDirectory, boolean isRegularFile) {
+ 	public QuiltFileAttributes(Path path, String key, BasicFileAttributes attrs) {
+        log.info "QuiltFileAttributes[$key] $attrs"
+        this.path = path;
  		this.key = key;
- 		this.lastModifiedTime = lastModifiedTime;
- 		this.size = size;
- 		directory = isDirectory;
- 		regularFile = isRegularFile;
+ 		this.attrs = attrs;
  	}
 
  	@Override
  	public FileTime lastModifiedTime() {
- 		return lastModifiedTime;
+ 		return attrs.lastModifiedTime();
  	}
 
  	@Override
  	public FileTime lastAccessTime() {
- 		return lastModifiedTime;
+ 		return attrs.lastAccessTime();
  	}
 
  	@Override
  	public FileTime creationTime() {
- 		return lastModifiedTime;
+        return attrs.creationTime();
  	}
 
  	@Override
  	public boolean isRegularFile() {
- 		return regularFile;
+        return attrs.creationTime();
  	}
 
  	@Override
  	public boolean isDirectory() {
- 		return directory;
+        return attrs.creationTime();
  	}
 
  	@Override
  	public boolean isSymbolicLink() {
- 		return false;
+        return attrs.isSymbolicLink();
  	}
 
  	@Override
  	public boolean isOther() {
- 		return false;
+        return attrs.isOther();
  	}
 
  	@Override
  	public long size() {
- 		return size;
+        return attrs.size();
  	}
 
  	@Override
@@ -95,7 +92,7 @@ import groovy.util.logging.Slf4j
  	@Override
  	public String toString() {
  		return format(
- 				"[%s: lastModified=%s, size=%s, isDirectory=%s, isRegularFile=%s]",
- 				key, lastModifiedTime, size, directory, regularFile);
+ 				"[%s: lastModified=%s, size=%s]",
+ 				key, lastModifiedTime(), size());
  	}
  }
