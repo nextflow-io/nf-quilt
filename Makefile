@@ -34,7 +34,7 @@ test-quilt: compile
 	./launch.sh run test/quilt.nf
 
 test-local:
-	./launch.sh run test/quilt.nf --src ~/Downloads/Packages/ernie_igv_demo_ecdcd41/ --pub ~/Downloads/Packages/sprint_2022-09-12
+	./launch.sh run test/quilt.nf --src /Users/quilt/Downloads/Packages/igv_demo --pub /Users/quilt/Downloads/Packages/test_nf22
 
 qtest: compile
 	clear

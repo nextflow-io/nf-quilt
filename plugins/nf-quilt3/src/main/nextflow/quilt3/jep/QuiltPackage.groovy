@@ -49,7 +49,12 @@ class QuiltPackage {
         def pkg = packages.get(pkgKey)
         if( !pkg ) {
             pkg = new QuiltPackage(path.bucket(), path.pkg_name())
-            pkg.install()
+            try {
+                pkg.install()
+            }
+            catch (Exception e) {
+                log.debug "Package `$path` does not yet exist"
+            }
             packages[pkgKey] = pkg
         }
         return pkg

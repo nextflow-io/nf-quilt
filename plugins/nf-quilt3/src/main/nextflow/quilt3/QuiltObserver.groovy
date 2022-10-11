@@ -56,11 +56,12 @@ class QuiltObserver implements TraceObserver {
 
     @Override
     void onFilePublish(Path path) {
+        log.info "onFilePublish.Path[$path]"
         if( path instanceof QuiltPath ) {
             QuiltPath qPath = (QuiltPath)path
             QuiltPackage pkg = qPath.pkg()
             this.pkgs.add(pkg)
-            log.info "`onFilePublish.QuiltPath` $qPath -> ${this.pkgs} "
+            log.info "onFilePublish.QuiltPath[$qPath]: pkgs=${this.pkgs}"
         }
     }
 

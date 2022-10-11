@@ -29,6 +29,7 @@ import java.nio.file.spi.FileSystemProvider
 import java.nio.file.NoSuchFileException
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
+import java.util.regex.Matcher
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -57,10 +58,6 @@ public final class QuiltFileSystem extends FileSystem {
     public QuiltFileSystem(String bucket, QuiltFileSystemProvider provider) {
       this.bucket = bucket;
       this.provider = provider;
-    }
-
-    public QuiltPath getPath(String pkg_name, String path, Map<String,Object> opts) {
-      return new QuiltPath(this, pkg_name, path, opts)
     }
 
     void copy(QuiltPath source, QuiltPath target) {
@@ -98,7 +95,7 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     QuiltFileAttributesView getFileAttributeView(QuiltPath path) {
-        log.info "Calling `getFileAttributeView`: ${path}"
+        log.info "QuiltFileAttributesView QuiltFileSystem.getFileAttributeView($path)"
         def pathString = path.toUriString()
         try {
             QuiltFileAttributes attrs = readAttributes(path)
@@ -110,11 +107,10 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     QuiltFileAttributes readAttributes(QuiltPath path)  {
+        log.info "QuiltFileAttributes QuiltFileSystem.readAttributes($path)"
         Path installPath = path.installPath()
-
         try {
             BasicFileAttributes attrs = Files.readAttributes(installPath, BasicFileAttributes)
-            log.info "BasicFileAttributes `readAttributes`: ${attrs}"
             return new QuiltFileAttributes(path,path.toString(),attrs)
         }
         catch (java.nio.file.NoSuchFileException e) {
@@ -143,9 +139,19 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     @Override
-    QuiltPath getPath(String pkg_name, String... more) {
-        final String path = more.join(QuiltPath.SEP)
-        return new QuiltPath(this, pkg_name, path, null)
+    QuiltPath getPath(String root, String... more) {
+        log.info "QuiltFileSystem.getPath`[${root}]: $more"
+        final String tail = more.join(QuiltPath.SEP)
+        try {
+            Matcher pattern = root =~ /${bucket}\/([_a-zA-Z0-9]+\/[_a-zA-Z0-9]+)/
+            String[] results = (String[])pattern[0]
+            final String pkg = results[1]
+            log.info "QuiltFileSystem.getPath.pkg`: $pkg"
+            new QuiltPath(this, pkg, tail, [:])
+        }
+        catch (Exception e) {
+            log.error "No package found[${root}] $e"
+        }
     }
 
     protected String toUriString(Path path) {
@@ -153,10 +159,12 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     protected String getBashLib(Path path) {
+        throw new UnsupportedOperationException("Operation 'getBashLib' is not supported by QuiltFileSystem")
         return path instanceof QuiltPath ? QuiltBashLib.script() : null
     }
 
     protected String getUploadCmd(String source, Path target) {
+        throw new UnsupportedOperationException("Operation 'getUploadCmd' is not supported by QuiltFileSystem")
         return target instanceof QuiltPath ?  QuiltFileCopyStrategy.uploadCmd(source, target) : null
     }
 

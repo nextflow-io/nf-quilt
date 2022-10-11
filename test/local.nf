@@ -1,13 +1,11 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.src = 'quilt3://quilt-example/examples/hurdat'
-//params.pub = 'quilt3://quilt-ernest-staging/test/hurdat'
-//params.src = '/Users/quilt/Downloads/Packages/igv_demo'
+params.src = '/Users/quilt/Downloads/Packages/igv_demo'
 params.pub = '/Users/quilt/Downloads/Packages/test_nf22'
 params.out = 'output'
 
-pkg_files = Channel.fromPath(params.src+'/*')
+pkg_files = Channel.fromPath(params.src+'/**')
 
 process publish {
     publishDir params.pub, mode: 'copy', overwrite: true

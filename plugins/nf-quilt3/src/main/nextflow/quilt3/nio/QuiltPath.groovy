@@ -49,10 +49,14 @@ public final class QuiltPath implements Path {
     private final Map<String,Object> options
 
     public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String file_key, Map<String,Object> options) {
+        if ( pkg_name.contains(':')) {
+            throw new IllegalArgumentException("Invalid `pkg_name`: $pkg_name")
+        }
         this.filesystem = filesystem
         this.pkg_name = pkg_name
         this.names = file_key ? file_key.split(SEP) : new String[0]
         this.options = options
+        log.info "Creating QuiltPath[$this]: pkg=$pkg_name"
     }
 
     public String bucket() {

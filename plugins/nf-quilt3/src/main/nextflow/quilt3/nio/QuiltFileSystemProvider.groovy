@@ -65,6 +65,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     private final Map<String,String> env = new HashMap<>(System.getenv())
     private final Map<String,QuiltFileSystem> fileSystems = [:]
+    private Map<Path,BasicFileAttributes> attributesCache = [:]
 
     /**
      * @inheritDoc
@@ -306,6 +307,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         try {
             if (modeWrite) {
                 //options = [WRITE,CREATE] as Set<OpenOption>
+                attributesCache = [:] // reset cache
                 notifyFilePublish(qPath)
             }
             def channel = FileChannel.open(installPath, options)
@@ -317,8 +319,20 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     }
 
     private List<Path> listFiles(Path dir, DirectoryStream.Filter<? super Path> filter ) {
-        log.info "Faking call to `listFiles`: ${dir}"
-        [dir]
+        final qPath = asQuiltPath(dir)
+        final dirPath = qPath.installPath()
+        try (DirectoryStream<Path> ds = Files.newDirectoryStream(dirPath, filter)) {
+            log.info "Creating `Files.newDirectoryStream`: ${dirPath}"
+            def collection =  ds.collect {
+                log.info "collect: $it"
+                if (it != dirPath) { return it }
+            }
+            log.info "Finished `Files.newDirectoryStream`: ${dirPath}"
+            return collection
+        }
+        catch (java.nio.file.NoSuchFileException e) {
+            log.error "Failed `listFiles` not found: ${dirPath} <- ${e}"
+        }
     }
 
     @Override
@@ -412,14 +426,20 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     def <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
-        log.info "Calling BasicFileAttributes `readAttributes`: ${path}"
+        def attr = attributesCache.get(path)
+        if ( attr ) {
+            return attr
+        }
+        log.info "<A>BasicFileAttributes QuiltFileSystemProvider.readAttributes($path)"
         if( type == BasicFileAttributes || type == QuiltFileAttributes ) {
-            log.info "Calling `readAttributes`: ${type}"
             def qPath = asQuiltPath(path)
             QuiltFileSystem fs = qPath.filesystem
             def result = (A)fs.readAttributes(qPath)
-            if( result )
+            if( result ) {
+                attributesCache[path] = result
                 return result
+            }
+
             throw new NoSuchFileException(qPath.toUriString())
         }
         throw new UnsupportedOperationException("Not a valid Quilt Storage file attribute type: $type")
@@ -427,7 +447,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-        log.info "Calling Map<String, Object> `readAttributes`: ${path}"
+        log.info "Map<String, Object> QuiltFileSystemProvider.readAttributes($path)"
         throw new UnsupportedOperationException("Operation Map 'readAttributes' is not supported by QuiltFileSystem")
     }
 

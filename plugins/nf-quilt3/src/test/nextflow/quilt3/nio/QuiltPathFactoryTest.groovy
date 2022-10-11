@@ -17,6 +17,7 @@
 package nextflow.quilt3.nio
 import nextflow.quilt3.QuiltSpecification
 
+import nextflow.Channel
 import nextflow.Global
 import nextflow.Session
 import spock.lang.Unroll
@@ -28,20 +29,19 @@ import spock.lang.Unroll
 
 class QuiltPathFactoryTest extends QuiltSpecification {
 
+    static String pkg_url = 'quilt3://quilt-example/examples/hurdat'
+    static String url = pkg_url + '/scripts/build.py?tophash=f8d1478d93&summarize=pattern1&summarize=pattern2&metadata=filename.json'
+
     @Unroll
     def 'should decompose Quilt URLs' () {
         given:
-        def factory = new QuiltPathFactory()
-        and:
-        def url = 'quilt3://bucket/pkg/name/optional/file/key?tophash=hexcode&summarize=pattern1&summarize=pattern2&metadata=filename.json'
-        and:
-        def qpath = factory.parseUri(url)
+        def qpath = QuiltPathFactory.Parse(url)
         expect:
         qpath != null
-        qpath.bucket() == 'bucket'
-        qpath.pkg_name() == 'pkg/name'
-        qpath.file_key() == 'optional/file/key'
-        qpath.option('tophash') == 'hexcode'
+        qpath.bucket() == 'quilt-example'
+        qpath.pkg_name() == 'examples/hurdat'
+        qpath.file_key() == 'scripts/build.py'
+        qpath.option('tophash') == 'f8d1478d93'
         qpath.option('metadata') == 'filename.json'
         qpath.option('summarize') == 'pattern2' // should be a list
     }
@@ -51,19 +51,23 @@ class QuiltPathFactoryTest extends QuiltSpecification {
         Global.session = Mock(Session) {
             getConfig() >> [quilt:[project:'foo', region:'x']]
         }
-        and:
-        def factory = new QuiltPathFactory()
 
         expect:
         //factory.parseUri(PATH).toUriString() == PATH
-        factory.parseUri(PATH).toString() == STR
+        QuiltPathFactory.Parse(PATH).toString() == STR
 
         where:
-        _ | PATH                                       | STR
+        _ | PATH                                        | STR
         _ | 'quilt3://reg/user/pkg/'                    | 'quilt3://reg/user/pkg/'
         _ | 'quilt3://reg/user/pkg'                     | 'quilt3://reg/user/pkg/'
-        _ | 'quilt3://reg/pkg/name/opt/file/key'       | 'quilt3://reg/pkg/name/opt/file/key'
-        _ | 'quilt3://reg/user/pkg?tophash=hex'            | 'quilt3://reg/user/pkg/'
+        _ | 'quilt3://reg/pkg/name/opt/file/key'        | 'quilt3://reg/pkg/name/opt/file/key'
+        _ | 'quilt3://reg/user/pkg?tophash=hex'         | 'quilt3://reg/user/pkg/'
+    }
+
+    def 'should create Channel from URL' () {
+        expect:
+        def channel = Channel.fromPath(url) // +'/*'
+        channel
     }
 
 }

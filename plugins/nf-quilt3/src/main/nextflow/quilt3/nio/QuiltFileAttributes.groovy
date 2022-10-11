@@ -33,15 +33,15 @@ import groovy.util.logging.Slf4j
 @Slf4j
 @CompileStatic
 class QuiltFileAttributes implements BasicFileAttributes {
-    private final Path path;
+    private final QuiltPath path;
     private final String key;
     private final BasicFileAttributes attrs;
 
- 	public QuiltFileAttributes(Path path, String key, BasicFileAttributes attrs) {
-        this.path = path;
- 		this.key = key;
- 		this.attrs = attrs;
-        log.info "QuiltFileAttributes[$path] $this"
+ 	public QuiltFileAttributes(QuiltPath path, String key, BasicFileAttributes attrs) {
+        this.path = path
+ 		this.key = path.isPackage() ? "/" : path.file_key()
+ 		this.attrs = attrs
+        log.info "QuiltFileAttributes($path): this=$this"
  	}
 
  	@Override
@@ -86,6 +86,7 @@ class QuiltFileAttributes implements BasicFileAttributes {
 
  	@Override
  	public Object fileKey() {
+        log.info "QuiltFileAttributes.fileKey: $key"
  		return key;
  	}
 
