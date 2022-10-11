@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.src = 'quilt://quilt-example/examples/hurdat'
-params.pub = 'quilt://quilt-ernest-staging/test/hurdat/'
+params.src = 'quilt3://quilt-example/examples/hurdat'
+params.pub = 'quilt3://quilt-ernest-staging/test/hurdat'
 //params.src = '/Users/quilt/Downloads/Packages/ernie_igv_demo_ecdcd41'
 //params.pub = '/Users/quilt/Downloads/Packages/sprint_2022-09-12'
 params.out = 'output'

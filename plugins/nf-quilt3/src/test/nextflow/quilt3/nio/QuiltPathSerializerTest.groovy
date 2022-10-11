@@ -35,11 +35,11 @@ class QuiltPathSerializerTest extends QuiltSpecification {
         }
 
         when:
-        def uri = URI.create("quilt://bucket/pkg/name/sample.csv")
+        def uri = URI.create("quilt3://bucket/pkg/name/sample.csv")
         def path = Paths.get(uri)
         then:
         path instanceof QuiltPath
         path.toUri() == uri
-        path.toUriString() == "quilt://bucket/pkg/name/sample.csv"
+        path.toUriString() == "quilt3://bucket/pkg/name/sample.csv"
     }
 }

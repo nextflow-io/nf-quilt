@@ -38,7 +38,7 @@ test-local:
 
 qtest: compile
 	clear
-	./launch.sh run test/publish.nf --pubdir quilt://quilt-ernest-staging/nf-quilt/test-out/
+	./launch.sh run test/publish.nf --pubdir quilt3://quilt-ernest-staging/nf-quilt/test-out/
 
 shell:
 	./gradlew -q --no-daemon --console=plain --init-script gradle/groovysh-init.gradle groovysh

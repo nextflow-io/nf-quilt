@@ -61,7 +61,7 @@ import nextflow.Session
 @CompileStatic
 class QuiltFileSystemProvider extends FileSystemProvider {
 
-    public static final String SCHEME = 'quilt'
+    public static final String SCHEME = 'quilt3'
 
     private final Map<String,String> env = new HashMap<>(System.getenv())
     private final Map<String,QuiltFileSystem> fileSystems = [:]

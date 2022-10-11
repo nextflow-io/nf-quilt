@@ -70,7 +70,7 @@ abstract class QuiltSpecification extends Specification {
     }
 
     protected Path mockQuiltPath(String path, boolean isDir=false) {
-        assert path.startsWith('quilt://')
+        assert path.startsWith('quilt3://')
 
         def tokens = path.tokenize('/')
         def bucket = tokens[1]
@@ -87,7 +87,7 @@ abstract class QuiltSpecification extends Specification {
 
         def fs = Mock(FileSystem)
         fs.provider() >> provider
-        fs.toString() >> ('quilt://' + bucket)
+        fs.toString() >> ('quilt3://' + bucket)
         def uri = GroovyMock(URI)
         uri.toString() >> path
 

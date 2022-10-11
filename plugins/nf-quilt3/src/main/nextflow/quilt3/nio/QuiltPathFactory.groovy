@@ -34,7 +34,7 @@ class QuiltPathFactory extends FileSystemPathFactory {
 
     @Override
     protected Path parseUri(String uri_string) {
-        if( !uri_string.startsWith('quilt://') )
+        if( !uri_string.startsWith('quilt3://') )
             return null
         final uri = new URI(uri_string)
         return FileHelper.getOrCreateFileSystemFor(uri).provider().getPath(uri)
@@ -43,7 +43,7 @@ class QuiltPathFactory extends FileSystemPathFactory {
     @Override
     protected String toUriString(Path p) {
       if( p instanceof QuiltPath ) {
-          return "quilt://${p.bucket()}/${p.pkg_name()}/${p.file_key()}".toString()
+          return "quilt3://${p.bucket()}/${p.pkg_name()}/${p.file_key()}".toString()
       }
       return null
     }
