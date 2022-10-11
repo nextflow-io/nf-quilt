@@ -18,13 +18,17 @@ package nextflow.quilt3.nio
 
 import java.nio.channels.Channels
 import java.nio.channels.SeekableByteChannel
+import java.nio.file.Files
 import java.nio.file.FileSystem
 import java.nio.file.FileStore
 import java.nio.file.Path
 import java.nio.file.PathMatcher
 import java.nio.file.WatchService
 import java.nio.file.attribute.UserPrincipalLookupService
-import java.nio.file.spi.FileSystemProvider;
+import java.nio.file.spi.FileSystemProvider
+import java.nio.file.NoSuchFileException
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
 
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
@@ -64,7 +68,7 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     void delete(QuiltPath path) {
-        log.info "Mocking call to `delete`: ${path}"
+        path.deinstall()
       //throw new UnsupportedOperationException("Operation 'delete' is not supported by QuiltFileSystem")
     }
 
@@ -93,8 +97,34 @@ public final class QuiltFileSystem extends FileSystem {
         return QuiltPath.SEP
     }
 
+    QuiltFileAttributesView getFileAttributeView(QuiltPath path) {
+        log.info "Calling `getFileAttributeView`: ${path}"
+        def pathString = path.toUriString()
+        try {
+            QuiltFileAttributes attrs = readAttributes(path)
+            return new QuiltFileAttributesView(attrs)
+        }
+        catch (Exception e) {
+            throw new IOException("Unable to get attributes for file: $pathString", e)
+        }
+    }
+
+    QuiltFileAttributes readAttributes(QuiltPath path)  {
+        Path installPath = path.installPath()
+
+        try {
+            BasicFileAttributes attrs = Files.readAttributes(installPath, BasicFileAttributes)
+            log.info "BasicFileAttributes `readAttributes`: ${attrs}"
+            return new QuiltFileAttributes(path,path.toString(),attrs)
+        }
+        catch (java.nio.file.NoSuchFileException e) {
+            log.debug "No attributes yet for: ${installPath}"
+        }
+        return null
+    }
+
     boolean exists(QuiltPath path) {
-        return false
+        return path.pkg().isInstalled()
     }
 
     Iterable<? extends Path> getRootDirectories() {
@@ -108,6 +138,7 @@ public final class QuiltFileSystem extends FileSystem {
 
     @Override
     Set<String> supportedFileAttributeViews() {
+        log.info "Calling `supportedFileAttributeViews`: ${this}"
         return Collections.unmodifiableSet( ['basic'] as Set )
     }
 

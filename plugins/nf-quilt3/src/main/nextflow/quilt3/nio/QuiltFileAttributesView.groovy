@@ -19,17 +19,22 @@ package nextflow.quilt3.nio
 import java.nio.file.attribute.BasicFileAttributeView
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
+import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
 
 /**
  * Implements {@link BasicFileAttributeView} for Quilt storage blob
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
+@Slf4j
+@CompileStatic
 class QuiltFileAttributesView implements BasicFileAttributeView {
 
     private final QuiltFileAttributes target;
 
     QuiltFileAttributesView(QuiltFileAttributes target) {
+        log.info "QuiltFileAttributesView: $target"
         this.target = target;
     }
 

@@ -17,6 +17,7 @@
 package nextflow.quilt3.nio
 
 import nextflow.quilt3.jep.QuiltPackage
+import java.nio.file.Files
 import java.nio.file.FileSystem
 import java.nio.file.LinkOption
 import java.nio.file.Path
@@ -73,6 +74,11 @@ public final class QuiltPath implements Path {
     Path installPath() {
         Path pkgPath = pkg().installPath()
         Paths.get(pkgPath.toString(), file_key())
+    }
+
+    public boolean deinstall() {
+        Path path = installPath()
+        return Files.deleteIfExists(path)
     }
 
     public Object option(key) {

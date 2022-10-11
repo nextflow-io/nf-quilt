@@ -49,6 +49,7 @@ class QuiltPackage {
         def pkg = packages.get(pkgKey)
         if( !pkg ) {
             pkg = new QuiltPackage(path.bucket(), path.pkg_name())
+            pkg.install()
             packages[pkgKey] = pkg
         }
         return pkg
@@ -110,6 +111,7 @@ class QuiltPackage {
     // usage: quilt3 install [-h] [--registry REGISTRY] [--top-hash TOP_HASH] [--dest DEST] [--dest-registry DEST_REGISTRY] [--path PATH] name
     Path install() {
         call('install',pkg_name,key_registry(),key_dest())
+        installed = true
         installPath()
     }
 

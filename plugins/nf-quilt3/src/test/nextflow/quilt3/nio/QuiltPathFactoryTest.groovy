@@ -33,7 +33,7 @@ class QuiltPathFactoryTest extends QuiltSpecification {
         given:
         def factory = new QuiltPathFactory()
         and:
-        def url = 'quilt://bucket/pkg/name/optional/file/key?hash=hexcode&summarize=pattern1&summarize=pattern2&metadata=filename.json'
+        def url = 'quilt://bucket/pkg/name/optional/file/key?tophash=hexcode&summarize=pattern1&summarize=pattern2&metadata=filename.json'
         and:
         def qpath = factory.parseUri(url)
         expect:
@@ -41,7 +41,7 @@ class QuiltPathFactoryTest extends QuiltSpecification {
         qpath.bucket() == 'bucket'
         qpath.pkg_name() == 'pkg/name'
         qpath.file_key() == 'optional/file/key'
-        qpath.option('hash') == 'hexcode'
+        qpath.option('tophash') == 'hexcode'
         qpath.option('metadata') == 'filename.json'
         qpath.option('summarize') == 'pattern2' // should be a list
     }
@@ -63,7 +63,7 @@ class QuiltPathFactoryTest extends QuiltSpecification {
         _ | 'quilt://reg/user/pkg/'                    | 'quilt://reg/user/pkg/'
         _ | 'quilt://reg/user/pkg'                     | 'quilt://reg/user/pkg/'
         _ | 'quilt://reg/pkg/name/opt/file/key'       | 'quilt://reg/pkg/name/opt/file/key'
-        _ | 'quilt://reg/user/pkg?hash=hex'            | 'quilt://reg/user/pkg/'
+        _ | 'quilt://reg/user/pkg?tophash=hex'            | 'quilt://reg/user/pkg/'
     }
 
 }

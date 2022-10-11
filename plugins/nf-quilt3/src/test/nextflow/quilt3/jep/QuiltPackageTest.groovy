@@ -19,6 +19,7 @@ package nextflow.quilt3.jep
 import nextflow.quilt3.QuiltSpecification
 import nextflow.quilt3.nio.QuiltPathFactory
 import nextflow.quilt3.nio.QuiltPath
+import nextflow.quilt3.nio.QuiltFileAttributesView
 
 import nextflow.Global
 import nextflow.Session
@@ -27,20 +28,22 @@ import spock.lang.Shared
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
+import java.nio.file.attribute.BasicFileAttributes
+import groovy.util.logging.Slf4j
 
 /**
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
 
+@Slf4j
 class QuiltPackageTest extends QuiltSpecification {
     QuiltPathFactory factory
     QuiltPath qpath
     QuiltPackage pkg
 
     static String pkg_url = 'quilt://quilt-dev-null/test/nf-quilt/'
-    static String url = pkg_url + '/README.md?hash=b744ee498f'
+    static String url = pkg_url + 'README.md?tophash=b744ee498f'
     static String out_url = 'quilt://quilt-ernest-staging/nf-quilt/test'
 
     def setup() {
@@ -85,12 +88,45 @@ class QuiltPackageTest extends QuiltSpecification {
         Files.exists(installPath)
     }
 
-    def 'should install files ' () {
-        // and attribute
+    def 'should get attributes for package folder' () {
+        given:
+        def qroot = factory.parseUri(pkg_url)
         expect:
-        !Files.exists(qpath.installPath())
-        pkg.install()
+        qroot.isPackage()
+        Files.readAttributes(qroot, BasicFileAttributes)
+    }
+
+    def 'should pre-install files and get attributes' () {
+        expect:
+        pkg.isInstalled()
         Files.exists(qpath.installPath())
+        Files.readAttributes(qpath, BasicFileAttributes)
+    }
+
+    def 'should deinstall files' () {
+        given:
+        Files.exists(qpath.installPath())
+        expect:
+        qpath.deinstall()
+        !Files.exists(qpath.installPath())
+        when:
+        Files.readAttributes(qpath, BasicFileAttributes)
+        then:
+        thrown(java.nio.file.NoSuchFileException)
+    }
+
+    def 'should iterate over installed files ' () {
+        given:
+        def root = qpath.getRoot()
+        def qroot = factory.parseUri(pkg_url)
+
+        expect:
+        root
+        qroot
+        root == qroot
+        Files.isDirectory(qroot)
+        pkg.install()
+        //vs!Files.isDirectory(qpath)
     }
 
     def 'should write new files back to bucket ' () {
@@ -99,14 +135,13 @@ class QuiltPackageTest extends QuiltSpecification {
         def qout = factory.parseUri(out_url)
         def opkg = qpath.pkg()
         def outPath = Paths.get(opkg.installPath().toString(), "${cleanDate}.txt")
-        // push to bucket
         // remove path
         // re-install package
         // verify file exists
         Files.writeString(outPath, cleanDate);
         expect:
         Files.exists(outPath)
-        opkg.push()
+        //opkg.push()
         //opkg.uninstall()
         //!Files.exists(outPath)
         //pkg.isInstalled()
