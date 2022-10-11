@@ -33,32 +33,98 @@ import java.lang.ProcessBuilder
 class QuiltParser {
     public static final String SCHEME = 'quilt+s3'
     public static final String SEP = '/'
-    public static final String PREFIX = SCHEME+"://"
+    public static final String PREFIX = SCHEME+'://'
+
+    public static final String P_PKG = 'package'
+    public static final String P_PATH = 'path'
 
     private final String bucket
     private final String pkg_name
-    private final String[] sub_paths
-    private final String hash
-    private final String tag
-    private final String catalog
+    private final String[] paths
+    private String hash
+    private String tag
+    //private final String catalog
     private final Map<String,Object> options
 
-    static public QuiltParser ForString(String uri_string) {
-        URI url = new URI(uri_string)
-        new QuiltParser(url)
+    static public QuiltParser ForPath(String path) {
+        QuiltParser.ForString(PREFIX+path)
     }
 
-    QuiltParser(URI uri) {
-        this.bucket = uri.authority
-        this.pkg_name = uri.fragment
+    static public QuiltParser ForString(String uri_string) {
+        URI uri = new URI(uri_string)
+        QuiltParser.ForURI(uri)
+    }
+
+    static public QuiltParser ForURI(URI uri) {
+        def options = parseQuery(uri.fragment)
+        String pkg = options.get(P_PKG)
+        String path = options.get(P_PATH)
+        new QuiltParser(uri.authority, pkg, path, options)
+    }
+
+    static private Map<String,Object> parseQuery(String query) {
+        if (!query) return [:]
+        final queryParams = query?.split('&') // safe operator for urls without query params
+        queryParams.collectEntries { param -> param.split('=').collect { URLDecoder.decode(it) }}
+    }
+
+    QuiltParser(String bucket, String pkg, String path, Map<String,Object> options) {
+        this.bucket = bucket
+        this.pkg_name = parsePkg(pkg)
+        this.paths = path ? path.split(SEP) : [] as String[]
+        this.options = options
     }
 
     String bucket() {
         bucket ? bucket.toLowerCase() : null
     }
 
+    String pkg_name() {
+        pkg_name
+    }
+
+    String hash() {
+        hash
+    }
+
+    String tag() {
+        tag
+    }
+
+    String path() {
+        paths.join(SEP)
+    }
+
+    boolean hasPath() {
+        paths.size() > 0
+    }
+
+    String parsePkg(String pkg) {
+        if (! pkg) return null
+        if (pkg.contains('@')) {
+            def split = pkg.split('@')
+            this.hash = split[1]
+            return split[0]
+        }
+        if (pkg.contains(':')) {
+            def split = pkg.split(':')
+            this.tag = split[1]
+            return split[0]
+        }
+        return pkg
+    }
+
     String toString() {
-        "${bucket}#${pkg_name}".replaceAll(/[-\/]/,'_')
+        String str = "${bucket()}#"
+        if ( pkg_name ) {
+            String pkg = pkg_name
+            if ( hash ) { pkg += "@$hash" }
+            if ( tag ) { pkg += ":$tag" }
+            str += "package=${pkg.replace('/','%2f')}"
+            if ( hasPath() ) { str += "&"}
+        }
+        if ( hasPath() ) { str += "path=${path().replace('/','%2f')}"}
+        str
     }
 
     String toUriString() {

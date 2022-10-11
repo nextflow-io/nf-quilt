@@ -98,10 +98,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     protected String getBucketName(URI uri) {
         assert uri
-        QuiltParser parsed = new QuiltParser(uri)
+        QuiltParser parsed = QuiltParser.ForURI(uri)
         return parsed.bucket()
     }
-
 
     /**
      * Constructs a new {@code FileSystem} object identified by a URI. This
@@ -234,11 +233,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     QuiltPath getPath(URI uri) {
-        final bucket = getBucketName(uri)
-        log.info "QuiltFileSystemProvider.getPath`[${uri}] bucket=$bucket"
-        log.info(uri.host,uri.path,uri.query)
-
-        final fs = getFileSystem0(bucket,true)
+        QuiltParser parsed = QuiltParser.ForURI(uri)
+        log.info "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
+        final fs = getFileSystem0(parsed.bucket(),true)
         getPath(fs, uri.path, uri.query)
     }
 
