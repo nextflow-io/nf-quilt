@@ -318,23 +318,6 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         }
     }
 
-    private List<Path> listFiles(Path dir, DirectoryStream.Filter<? super Path> filter ) {
-        final qPath = asQuiltPath(dir)
-        final dirPath = qPath.installPath()
-        try (DirectoryStream<Path> ds = Files.newDirectoryStream(dirPath, filter)) {
-            log.info "Creating `Files.newDirectoryStream`: ${dirPath}"
-            def collection =  ds.collect {
-                log.info "collect: $it"
-                if (it != dirPath) { return it }
-            }
-            log.info "Finished `Files.newDirectoryStream`: ${dirPath}"
-            return collection
-        }
-        catch (java.nio.file.NoSuchFileException e) {
-            log.error "Failed `listFiles` not found: ${dirPath} <- ${e}"
-        }
-    }
-
     @Override
     DirectoryStream<Path> newDirectoryStream(Path obj, DirectoryStream.Filter<? super Path> filter) throws IOException {
         log.info "Creating `newDirectoryStream`: ${obj}"
@@ -342,15 +325,8 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         if (!qPath.isPackage())
             throw new NotDirectoryException(qPath.toString());
 
-        final list = listFiles(obj, filter)
-        return new DirectoryStream<Path>() {
-            @Override
-            Iterator<Path> iterator() {
-                list.iterator()
-            }
-
-            @Override void close() throws IOException { }
-        }
+        final dirPath = qPath.installPath()
+        return Files.newDirectoryStream(dirPath, filter)
     }
 
     @Override

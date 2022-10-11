@@ -69,6 +69,26 @@ abstract class QuiltSpecification extends Specification {
         pluginsMode ? System.setProperty('pf4j.mode',pluginsMode) : System.clearProperty('pf4j.mode')
     }
 
+    boolean existsPath(String path) {
+        log.debug "Check path string exists '$path'"
+        existsPath(Paths.get(path))
+    }
+
+    String readObject(Path path) {
+        log.debug "Read String from '$path'"
+        new String(Files.readAllBytes(path))
+    }
+
+    void createObject(String url, String text) {
+        def path = Paths.get(new URI(url))
+        createObject(path, text)
+    }
+
+    void createObject(Path path, String text) {
+        log.debug "Write String[$text] to '$path'"
+        Files.write(path, text.bytes)
+    }
+
     protected Path mockQuiltPath(String path, boolean isDir=false) {
         assert path.startsWith('quilt3://')
 

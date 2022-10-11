@@ -3,9 +3,8 @@ nextflow.enable.dsl=2
 
 params.src = '/Users/quilt/Downloads/Packages/igv_demo'
 params.pub = '/Users/quilt/Downloads/Packages/test_nf22'
-params.out = 'output'
 
-pkg_files = Channel.fromPath(params.src+'/**')
+pkg_files = Channel.fromPath(params.src+'/*')
 
 process publish {
     publishDir params.pub, mode: 'copy', overwrite: true
@@ -17,9 +16,9 @@ process publish {
       path params.out + '/*'
 
     """
-    mkdir -p $params.out
-    cp -r $x $params.out
-    echo $params.out/$x
+    mkdir -p output
+    cp -r $x output
+    echo output/$x
     """
 }
 

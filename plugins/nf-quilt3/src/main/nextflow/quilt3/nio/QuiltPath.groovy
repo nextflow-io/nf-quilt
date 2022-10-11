@@ -45,17 +45,25 @@ public final class QuiltPath implements Path {
 
     private final QuiltFileSystem filesystem
     private final String pkg_name
-    private final String[] names
+    private final String[] sub_paths
+    private final String hash
+    private final String tag
+    private final String catalog
     private final Map<String,Object> options
 
-    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String file_key, Map<String,Object> options) {
+    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String sub_path, Map<String,Object> options) {
         if ( pkg_name.contains(':')) {
             throw new IllegalArgumentException("Invalid `pkg_name`: $pkg_name")
         }
         this.filesystem = filesystem
         this.pkg_name = pkg_name
-        this.names = file_key ? file_key.split(SEP) : new String[0]
-        this.options = options
+        this.sub_paths = sub_path ? sub_path.split(SEP) : new String[0]
+        if ( options ) {
+            this.options = options
+            this.hash = options.get('hash')
+            this.tag = options.get('tag')
+            this.catalog = options.get('catalog')
+        }
         log.info "Creating QuiltPath[$this]: pkg=$pkg_name"
     }
 
@@ -68,16 +76,16 @@ public final class QuiltPath implements Path {
     }
 
     public QuiltPackage pkg() {
-        return QuiltPackage.ForPath(this)
+        return isAbsolute() ? QuiltPackage.ForPath(this) : null
     }
 
     public String file_key() {
-        return names.join(SEP)
+        return sub_paths.join(SEP)
     }
 
     Path installPath() {
         Path pkgPath = pkg().installPath()
-        Paths.get(pkgPath.toString(), file_key())
+        Paths.get(pkgPath.toUriString(), file_key())
     }
 
     public boolean deinstall() {
@@ -96,7 +104,7 @@ public final class QuiltPath implements Path {
 
     @Override
     boolean isAbsolute() {
-        pkg_name != null
+        pkg_name != ""
     }
 
     boolean isPackage() {
@@ -124,17 +132,17 @@ public final class QuiltPath implements Path {
 
     @Override
     int getNameCount() {
-        names.size()
+        sub_paths.size()
     }
 
     @Override
     Path getName(int index) {
-        new QuiltPath(filesystem, pkg_name, names[0,index], options)
+        new QuiltPath(filesystem, pkg_name, sub_paths[0,index], options)
     }
 
     @Override
     Path subpath(int beginIndex, int endIndex) {
-        final sub = names[beginIndex,endIndex].join(SEP)
+        final sub = sub_paths[beginIndex,endIndex].join(SEP)
         new QuiltPath(filesystem, pkg_name, sub, options)
     }
 
@@ -192,16 +200,17 @@ public final class QuiltPath implements Path {
 
     @Override
     Path relativize(Path other) {
-        new QuiltPath(filesystem, null, file_key(), options)
+        return this
+        new QuiltPath(filesystem, "", file_key(), options)
     }
 
     @Override
     String toString() {
-        toUriString()
+        toUriString().replace(QuiltPathFactory.PREFIX,"")
     }
 
     String toUriString() {
-      QuiltPathFactory factory = new QuiltPathFactory()
+        QuiltPathFactory factory = new QuiltPathFactory()
         factory.toUriString(this)
     }
 

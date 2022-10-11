@@ -61,7 +61,7 @@ class QuiltPackageTest extends QuiltSpecification {
         expect:
         pkg != null
         pkg.toString() == "quilt_dev_null_test_nf_quilt"
-        pkgPath.toString() == pkg_url
+        pkgPath.toUriString() == pkg_url
         pkg == pkg2
     }
 

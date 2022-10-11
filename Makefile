@@ -69,6 +69,9 @@ else
 	./gradlew ${mm}test --tests ${class}
 endif
 
+fast:
+	./gradlew ${mm}test --fail-fast || open file:///Users/quilt/Documents/GitHub/nf-quilt/plugins/nf-quilt3/build/reports/tests/test/index.html
+
 #
 # Upload JAR artifacts to Maven Central
 #
