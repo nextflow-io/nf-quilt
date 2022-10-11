@@ -62,6 +62,7 @@ import nextflow.Session
 class QuiltFileSystemProvider extends FileSystemProvider {
 
     public static final String SCHEME = 'quilt3'
+    public static final String S3_SCHEME = 'quilt+s3'
 
     private final Map<String,String> env = new HashMap<>(System.getenv())
     private final Map<String,QuiltFileSystem> fileSystems = [:]
@@ -101,14 +102,14 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         if( !uri.scheme )
             throw new IllegalArgumentException("Missing URI scheme")
 
-        if( uri.scheme.toLowerCase() != SCHEME )
+        if( uri.scheme.toLowerCase() != SCHEME && uri.scheme.toLowerCase() != S3_SCHEME )
             throw new IllegalArgumentException("Mismatch provider URI scheme: `$scheme`")
 
         if( !uri.authority ) {
             if( uri.host )
                 return uri.host.toLowerCase()
             else
-                throw new IllegalArgumentException("Missing Quilt bucket name")
+                return null
         }
 
         return uri.authority.toLowerCase()
@@ -247,6 +248,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     QuiltPath getPath(URI uri) {
         final bucket = getBucketName(uri)
+        log.info "QuiltFileSystemProvider.getPath`[${uri}] bucket=$bucket"
+        log.info(uri.host,uri.path,uri.query)
+
         final fs = getFileSystem0(bucket,true)
         getPath(fs, uri.path, uri.query)
     }
@@ -258,12 +262,18 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      * @return A {@link QuiltPath} object
      */
     QuiltPath getPath(QuiltFileSystem fs, String abspath, String query) {
-        final path = abspath.substring(1)
-        final pkg_split = path.indexOf('/', path.indexOf("/") + 1)
-        final String pkg_name = (pkg_split==-1) ? path : path.substring(0,pkg_split)
-        final String file_key = (pkg_split==-1) ? null : path.substring(pkg_split+1)
+        log.debug("${fs}.getPath: abspath=$abspath query=$query")
         final opts = query ? parseQuery(query) : null
-        return new QuiltPath(fs, pkg_name, file_key, opts)
+        try {
+            final path = abspath.substring(1)
+            final pkg_split = path.indexOf('/', path.indexOf("/") + 1)
+            final String pkg_name = (pkg_split==-1) ? path : path.substring(0,pkg_split)
+            final String file_key = (pkg_split==-1) ? null : path.substring(pkg_split+1)
+            return new QuiltPath(fs, pkg_name, file_key, opts)
+        }
+        catch (Exception e) {
+            return new QuiltPath(fs, "", abspath, opts)
+        }
     }
 
     static private FileSystemProvider provider( Path path ) {

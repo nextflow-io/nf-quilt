@@ -141,16 +141,27 @@ public final class QuiltFileSystem extends FileSystem {
     @Override
     QuiltPath getPath(String root, String... more) {
         log.info "QuiltFileSystem.getPath`[${root}]: $more"
-        final String tail = more.join(QuiltPath.SEP)
-        try {
-            Matcher pattern = root =~ /${bucket}\/([_a-zA-Z0-9]+\/[_a-zA-Z0-9]+)/
-            String[] results = (String[])pattern[0]
-            final String pkg = results[1]
-            log.info "QuiltFileSystem.getPath.pkg`: $pkg"
-            new QuiltPath(this, pkg, tail, [:])
+        final String tail = more ? more.join(QuiltPath.SEP) : null
+        if (root[0] == '/') {
+            if (!(root =~ /^\/${bucket}/)) {
+                root = "/${bucket}${root}"
+            }
         }
-        catch (Exception e) {
-            log.error "No package found[${root}] $e"
+        if (root =~ /^\/?${bucket}/ ) {
+            if ( root =~ /^\/?${bucket}\/?$/ )
+                return new QuiltPath(this)
+            try {
+                Matcher pattern = root =~ /${bucket}\/([_a-zA-Z0-9]+\/[_a-zA-Z0-9]+)/
+                String[] results = (String[])pattern[0]
+                final String pkg = results[1]
+                log.info "QuiltFileSystem.getPath.pkg`: $pkg"
+                return new QuiltPath(this, pkg, tail)
+            }
+            catch (Exception e) {
+                log.error "Invalid package found[${root}] $e"
+                return null
+            }
+
         }
     }
 

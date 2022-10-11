@@ -51,7 +51,7 @@ public final class QuiltPath implements Path {
     private final String catalog
     private final Map<String,Object> options
 
-    public QuiltPath(QuiltFileSystem filesystem, String pkg_name, String sub_path, Map<String,Object> options) {
+    public QuiltPath(QuiltFileSystem filesystem, String pkg_name="", String sub_path = null, Map<String,Object> options = [:]) {
         if ( pkg_name.contains(':')) {
             throw new IllegalArgumentException("Invalid `pkg_name`: $pkg_name")
         }
@@ -112,7 +112,7 @@ public final class QuiltPath implements Path {
     }
 
     QuiltPath getPackage() {
-        isPackage() ? this : new QuiltPath(filesystem, pkg_name, "", null)
+        isPackage() ? this : new QuiltPath(filesystem, pkg_name)
     }
 
     @Override

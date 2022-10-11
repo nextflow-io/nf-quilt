@@ -20,7 +20,6 @@ class QuiltFileSystemProviderTest extends QuiltSpecification {
         provider.getScheme() == 'quilt3'
     }
 
-    @Ignore
     def 'should return a blob path' () {
         given:
         def fs = Mock(QuiltFileSystem)
@@ -42,7 +41,6 @@ class QuiltFileSystemProviderTest extends QuiltSpecification {
 
     }
 
-    @Ignore
     def 'should get a storage path' () {
         given:
         def fs = Mock(QuiltFileSystem)

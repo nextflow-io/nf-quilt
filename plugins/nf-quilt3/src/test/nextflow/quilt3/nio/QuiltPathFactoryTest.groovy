@@ -53,7 +53,6 @@ class QuiltPathFactoryTest extends QuiltSpecification {
         }
 
         expect:
-        //factory.parseUri(PATH).toUriString() == PATH
         QuiltPathFactory.Parse(PATH).toString() == STR
 
         where:
