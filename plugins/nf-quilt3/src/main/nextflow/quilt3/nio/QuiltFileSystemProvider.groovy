@@ -50,6 +50,8 @@ import groovy.transform.Memoized
 import groovy.util.logging.Slf4j
 import nextflow.Global
 import nextflow.Session
+import nextflow.quilt3.jep.QuiltParser
+
 /**
  * Implements NIO File system provider for Quilt Blob Storage
  *
@@ -61,9 +63,6 @@ import nextflow.Session
 @CompileStatic
 class QuiltFileSystemProvider extends FileSystemProvider {
 
-    public static final String SCHEME = 'quilt3'
-    public static final String S3_SCHEME = 'quilt+s3'
-
     private final Map<String,String> env = new HashMap<>(System.getenv())
     private final Map<String,QuiltFileSystem> fileSystems = [:]
     private Map<Path,BasicFileAttributes> attributesCache = [:]
@@ -73,7 +72,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     String getScheme() {
-        return SCHEME
+        return QuiltParser.SCHEME
     }
 
     static private QuiltPath asQuiltPath(Path path ) {
@@ -99,20 +98,8 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     protected String getBucketName(URI uri) {
         assert uri
-        if( !uri.scheme )
-            throw new IllegalArgumentException("Missing URI scheme")
-
-        if( uri.scheme.toLowerCase() != SCHEME && uri.scheme.toLowerCase() != S3_SCHEME )
-            throw new IllegalArgumentException("Mismatch provider URI scheme: `$scheme`")
-
-        if( !uri.authority ) {
-            if( uri.host )
-                return uri.host.toLowerCase()
-            else
-                return null
-        }
-
-        return uri.authority.toLowerCase()
+        QuiltParser parsed = new QuiltParser(uri)
+        return parsed.bucket()
     }
 
 

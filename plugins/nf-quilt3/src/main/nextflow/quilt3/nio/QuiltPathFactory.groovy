@@ -22,8 +22,9 @@ import groovy.transform.CompileStatic
 import nextflow.Global
 import nextflow.Session
 import nextflow.quilt3.QuiltOpts
+import nextflow.quilt3.jep.QuiltParser
 import nextflow.file.FileSystemPathFactory
-import nextflow.file.FileHelper;
+import nextflow.file.FileHelper
 /**
  * Implements FileSystemPathFactory interface for Google storage
  *
@@ -32,8 +33,6 @@ import nextflow.file.FileHelper;
 @CompileStatic
 class QuiltPathFactory extends FileSystemPathFactory {
 
-    public static final String PREFIX = QuiltFileSystemProvider.SCHEME + "://"
-
     static public QuiltPath Parse(String path) {
         QuiltPathFactory factory = new QuiltPathFactory()
         (QuiltPath) factory.parseUri(path)
@@ -41,7 +40,7 @@ class QuiltPathFactory extends FileSystemPathFactory {
 
     @Override
     protected Path parseUri(String uri_string) {
-        if( !uri_string.startsWith(PREFIX) )
+        if( !uri_string.startsWith(QuiltParser.PREFIX) )
             return null
         final uri = new URI(uri_string)
         return FileHelper.getOrCreateFileSystemFor(uri).provider().getPath(uri)
@@ -50,7 +49,7 @@ class QuiltPathFactory extends FileSystemPathFactory {
     @Override
     protected String toUriString(Path p) {
       if( p instanceof QuiltPath ) {
-          return "${PREFIX}${p.bucket()}/${p.pkg_name()}/${p.file_key()}".toString()
+          return "${QuiltParser.PREFIX}${p.bucket()}/${p.pkg_name()}/${p.file_key()}".toString()
       }
       return null
     }

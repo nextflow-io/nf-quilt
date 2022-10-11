@@ -17,6 +17,7 @@
 package nextflow.quilt3.nio
 
 import nextflow.quilt3.jep.QuiltPackage
+import nextflow.quilt3.jep.QuiltParser
 import java.nio.file.Files
 import java.nio.file.FileSystem
 import java.nio.file.LinkOption
@@ -206,7 +207,7 @@ public final class QuiltPath implements Path {
 
     @Override
     String toString() {
-        toUriString().replace(QuiltPathFactory.PREFIX,"")
+        toUriString().replace(QuiltParser.PREFIX,"")
     }
 
     String toUriString() {
