@@ -23,19 +23,26 @@ import groovy.util.logging.Slf4j
 @Slf4j
 @CompileStatic
 class QuiltID {
+    public static final int MIN_SIZE = 2
+    public static String[] DEFAULT_PACKAGE=["null","default"]
+
     private static final Map<String,QuiltID> ids = [:]
 
     static public QuiltID Fetch(String bucket, String pkg_name) {
-        if (!bucket || !pkg_name) {
+        if (!bucket) {
             log.error "null == QuiltID.Fetch($bucket, $pkg_name)"
             return null
         }
-        def split = pkg_name.split(QuiltParser.SEP)
-        if (split.size() != 2) {
-            log.error "${split.size()}  == ${pkg_name}.split()"
-            return null
+        if (!pkg_name || pkg_name.size()<MIN_SIZE) {
+            pkg_name = DEFAULT_PACKAGE.join(QuiltParser.SEP)
+            log.error "QuiltID.Fetch: setting missing package to $pkg_name"
         }
-        String key = "${bucket}/${pkg_name}"
+        String[] split = pkg_name.split(QuiltParser.SEP)
+        if (split.size()<MIN_SIZE || split[1].size()<MIN_SIZE) {
+            split += DEFAULT_PACKAGE[1] as String
+            log.error "QuiltID.Fetch: setting missing suffix to $split[1]"
+        }
+        String key = "${bucket}/${split[0]}/${split[1]}"
         def id = ids.get(key)
         if (id) return id
         ids[key] = new QuiltID(bucket, split[0], split[1])

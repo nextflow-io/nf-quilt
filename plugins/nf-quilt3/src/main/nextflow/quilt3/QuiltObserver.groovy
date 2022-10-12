@@ -94,8 +94,8 @@ class QuiltObserver implements TraceObserver {
 ### params
 ${meta['params']}
 
-# workflow
-## scriptFile: ${meta['workflow']['scriptFile']}
+## workflow
+### scriptFile: ${meta['workflow']['scriptFile']}
 ### sessionId: ${meta['workflow']['sessionId']}
 - start: ${meta['workflow']['start']}
 - complete: ${meta['workflow']['complete']}
