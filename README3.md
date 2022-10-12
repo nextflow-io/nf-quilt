@@ -36,13 +36,13 @@ You must also specify a package name containing exactly one '/', such as `instru
 Finally, run your Nextflow pipeline with your config file, setting that URL as your output directory, .e.g.:
 
 ```
-nextflow run my/ingest --outdir quilt3://raw-bucket/instrument/experiment
+nextflow run my/ingest --outdir quilt+s3://raw-bucket/instrument/experiment
 ```
 
 You can then use that package as input to future jobs, e.g.:
 
 ```
-nextflow run my/analysis --indir quilt3://raw-bucket/instrument/experiment --outdir quilt3://prod-bucket/analysis/experiment
+nextflow run my/analysis --indir quilt+s3://raw-bucket/instrument/experiment --outdir quilt+s3://prod-bucket/analysis/experiment
 ```
 
 ## Additional Features (TBD)

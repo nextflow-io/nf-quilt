@@ -48,7 +48,7 @@ class QuiltObserver implements TraceObserver {
 
     @Override
     void onFlowCreate(Session session) {
-        log.info "`onFlowCreate` $this"
+        log.debug "`onFlowCreate` $this"
         this.session = session
         this.config = session.config.navigate('quilt') as Map
         this.pkgs = new HashSet<>()
@@ -56,18 +56,18 @@ class QuiltObserver implements TraceObserver {
 
     @Override
     void onFilePublish(Path path) {
-        log.info "onFilePublish.Path[$path]"
+        log.debug "onFilePublish.Path[$path]"
         if( path instanceof QuiltPath ) {
             QuiltPath qPath = (QuiltPath)path
             QuiltPackage pkg = qPath.pkg()
             this.pkgs.add(pkg)
-            log.info "onFilePublish.QuiltPath[$qPath]: pkgs=${this.pkgs}"
+            log.debug "onFilePublish.QuiltPath[$qPath]: pkgs=${this.pkgs}"
         }
     }
 
     @Override
     void onFlowComplete() {
-        log.info "`onFlowComplete` ${this.pkgs}"
+        log.debug "`onFlowComplete` ${this.pkgs}"
         // make sure there are packages to publish
         if( this.pkgs.isEmpty() ) {
             return

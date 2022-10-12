@@ -234,7 +234,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     QuiltPath getPath(URI uri) {
         QuiltParser parsed = QuiltParser.ForURI(uri)
-        log.info "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
+        log.debug "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
         final fs = getFileSystem0(parsed.bucket(),true)
         new QuiltPath(fs, parsed)
     }
@@ -271,35 +271,37 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     public SeekableByteChannel newByteChannel(
       Path path, Set<? extends OpenOption> options, FileAttribute<?>... attrs) throws IOException {
-        log.info "Creating `newByteChannel`: ${path} <- ${options}"
+        log.debug "Creating `newByteChannel`: ${path} <- ${options}"
         final modeWrite = options.contains(WRITE) || options.contains(APPEND)
 
         final qPath = asQuiltPath(path)
-        Path installPath = qPath.installPath()
-        Path parent = installPath.getParent()
+        Path installedPath = qPath.localPath()
+        Path parent = installedPath.getParent()
         Files.createDirectories(parent)
         try {
             if (modeWrite) {
+                log.debug "\tWriting to: $installedPath"
                 //options = [WRITE,CREATE] as Set<OpenOption>
                 attributesCache = [:] // reset cache
                 notifyFilePublish(qPath)
             }
-            def channel = FileChannel.open(installPath, options)
+            log.debug "\tOpening channel to: $installedPath"
+            def channel = FileChannel.open(installedPath, options)
             return channel
         }
         catch (java.nio.file.NoSuchFileException e) {
-            log.error "Failed `FileChannel.open`: ${installPath} <- ${options}"
+            log.error "Failed `FileChannel.open`: ${installedPath} <- ${options}"
         }
     }
 
     @Override
     DirectoryStream<Path> newDirectoryStream(Path obj, DirectoryStream.Filter<? super Path> filter) throws IOException {
-        log.info "Creating `newDirectoryStream`: ${obj}"
+        log.debug "Creating `newDirectoryStream`: ${obj}"
         final qPath = asQuiltPath(obj)
         if (!qPath.isJustPackage())
             throw new NotDirectoryException(qPath.toString());
 
-        final dirPath = qPath.installPath()
+        final dirPath = qPath.localPath()
         return Files.newDirectoryStream(dirPath, filter)
     }
 
@@ -315,11 +317,12 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         checkRoot(obj)
         final path = asQuiltPath(obj)
         getQuiltFilesystem(path).delete(path)
+        attributesCache = [:] // reset cache
     }
 
     @Override
     void copy(Path from, Path to, CopyOption... options) throws IOException {
-        log.info "Attempting `copy`: ${from} -> ${to}"
+        log.debug "Attempting `copy`: ${from} -> ${to}"
         assert provider(from) == provider(to)
         if( from == to )
             return // nothing to do -- just return
@@ -354,7 +357,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     void checkAccess(Path path, AccessMode... modes) throws IOException {
-        log.info "Calling `checkAccess`: ${path}"
+        log.debug "Calling `checkAccess`: ${path}"
         checkRoot(path)
         final qPath = asQuiltPath(path)
         readAttributes(qPath, QuiltFileAttributes.class)
@@ -364,7 +367,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     def <V extends FileAttributeView> V getFileAttributeView(Path path, Class<V> type, LinkOption... options) {
-        log.info "Calling `getFileAttributeView`: ${path}"
+        log.debug "Calling `getFileAttributeView`: ${path}"
         checkRoot(path)
         if( type == BasicFileAttributeView || type == QuiltFileAttributesView ) {
             def qPath = asQuiltPath(path)
@@ -376,11 +379,11 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     def <A extends BasicFileAttributes> A readAttributes(Path path, Class<A> type, LinkOption... options) throws IOException {
+        log.debug "<A>BasicFileAttributes QuiltFileSystemProvider.readAttributes($path)"
         def attr = attributesCache.get(path)
         if ( attr ) {
             return attr
         }
-        log.info "<A>BasicFileAttributes QuiltFileSystemProvider.readAttributes($path)"
         if( type == BasicFileAttributes || type == QuiltFileAttributes ) {
             def qPath = asQuiltPath(path)
             QuiltFileSystem fs = qPath.filesystem
@@ -389,7 +392,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
                 attributesCache[path] = result
                 return result
             }
-
+            log.debug "readAttributes: File ${qPath.localPath()} not found"
             throw new NoSuchFileException(qPath.toUriString())
         }
         throw new UnsupportedOperationException("Not a valid Quilt Storage file attribute type: $type")
@@ -397,7 +400,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
     @Override
     Map<String, Object> readAttributes(Path path, String attributes, LinkOption... options) throws IOException {
-        log.info "Map<String, Object> QuiltFileSystemProvider.readAttributes($path)"
+        log.debug "Map<String, Object> QuiltFileSystemProvider.readAttributes($path)"
         throw new UnsupportedOperationException("Operation Map 'readAttributes' is not supported by QuiltFileSystem")
     }
 

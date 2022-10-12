@@ -62,10 +62,11 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     void copy(QuiltPath source, QuiltPath target) {
-      throw new UnsupportedOperationException("Operation 'copy' is not supported by QuiltFileSystem")
+      throw new UnsupportedOperationException("NOT Implemented 'QuiltFileSystem.copy' `$source` -> `$target`")
     }
 
     void delete(QuiltPath path) {
+        log.debug "QuiltFileSystem.delete: $path"
         path.deinstall()
       //throw new UnsupportedOperationException("Operation 'delete' is not supported by QuiltFileSystem")
     }
@@ -96,7 +97,7 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     QuiltFileAttributesView getFileAttributeView(QuiltPath path) {
-        log.info "QuiltFileAttributesView QuiltFileSystem.getFileAttributeView($path)"
+        log.debug "QuiltFileAttributesView QuiltFileSystem.getFileAttributeView($path)"
         def pathString = path.toUriString()
         try {
             QuiltFileAttributes attrs = readAttributes(path)
@@ -108,14 +109,14 @@ public final class QuiltFileSystem extends FileSystem {
     }
 
     QuiltFileAttributes readAttributes(QuiltPath path)  {
-        log.info "QuiltFileAttributes QuiltFileSystem.readAttributes($path)"
-        Path installPath = path.installPath()
+        log.debug "QuiltFileAttributes QuiltFileSystem.readAttributes($path)"
+        Path installedPath = path.localPath()
         try {
-            BasicFileAttributes attrs = Files.readAttributes(installPath, BasicFileAttributes)
+            BasicFileAttributes attrs = Files.readAttributes(installedPath, BasicFileAttributes)
             return new QuiltFileAttributes(path,path.toString(),attrs)
         }
         catch (java.nio.file.NoSuchFileException e) {
-            log.debug "No attributes yet for: ${installPath}"
+            log.debug "No attributes yet for: ${installedPath}"
         }
         return null
     }
@@ -135,13 +136,13 @@ public final class QuiltFileSystem extends FileSystem {
 
     @Override
     Set<String> supportedFileAttributeViews() {
-        log.info "Calling `supportedFileAttributeViews`: ${this}"
+        log.debug "Calling `supportedFileAttributeViews`: ${this}"
         return Collections.unmodifiableSet( ['basic'] as Set )
     }
 
     @Override
     QuiltPath getPath(String root, String... more) {
-        log.info "QuiltFileSystem.getPath`[${root}]: $more"
+        log.debug "QuiltFileSystem.getPath`[${root}]: $more"
         throw new UnsupportedOperationException("Operation 'getPath' is not supported by QuiltFileSystem")
     }
 

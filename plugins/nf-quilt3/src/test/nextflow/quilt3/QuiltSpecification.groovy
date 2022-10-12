@@ -15,8 +15,12 @@
  */
 
 package nextflow.quilt3
+import nextflow.quilt3.nio.QuiltPath
 
+import java.nio.ByteBuffer
+import java.nio.channels.SeekableByteChannel
 import java.nio.file.FileSystem
+import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
@@ -31,11 +35,13 @@ import groovy.util.logging.Slf4j
 import spock.lang.Shared
 import spock.lang.Timeout
 import spock.lang.Specification
+import sun.nio.fs.UnixPath
 
 /**
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
  */
+@Slf4j
 abstract class QuiltSpecification extends Specification {
 
     @Shared String pluginsMode
@@ -69,9 +75,26 @@ abstract class QuiltSpecification extends Specification {
         pluginsMode ? System.setProperty('pf4j.mode',pluginsMode) : System.clearProperty('pf4j.mode')
     }
 
+    Path createObject(String url, String text) {
+        def path = Paths.get(new URI(url))
+        createObject(path, text)
+    }
+
+    Path createObject(Path path, String text) {
+        log.debug "Write String[$text] to '$path'"
+        Files.write(path, text.bytes)
+        path.localPath()
+    }
+
     boolean existsPath(String path) {
         log.debug "Check path string exists '$path'"
-        existsPath(Paths.get(path))
+        Files.exists(Paths.get(path))
+    }
+
+    boolean existsPath(QuiltPath path) {
+        log.debug "Check path object exists '$path'"
+        final local = path.localPath()
+        existsPath(local.toString())
     }
 
     String readObject(Path path) {
@@ -79,18 +102,39 @@ abstract class QuiltSpecification extends Specification {
         new String(Files.readAllBytes(path))
     }
 
-    void createObject(String url, String text) {
-        def path = Paths.get(new URI(url))
-        createObject(path, text)
+    String readChannel(SeekableByteChannel sbc, int buffLen )  {
+        def buffer = new ByteArrayOutputStream()
+        ByteBuffer bf = ByteBuffer.allocate(buffLen)
+        while((sbc.read(bf))>0) {
+            bf.flip();
+            buffer.write(bf.array(), 0, bf.limit())
+            bf.clear();
+        }
+
+        buffer.toString()
     }
 
-    void createObject(Path path, String text) {
-        log.debug "Write String[$text] to '$path'"
-        Files.write(path, text.bytes)
+    void writeChannel( SeekableByteChannel channel, String content, int buffLen ) {
+
+        def bytes = content.getBytes()
+        ByteBuffer buf = ByteBuffer.allocate(buffLen);
+        int i=0
+        while( i < bytes.size()) {
+
+            def len = Math.min(buffLen, bytes.size()-i);
+            buf.clear();
+            buf.put(bytes, i, len);
+            buf.flip();
+            channel.write(buf);
+
+            i += len
+        }
+
     }
+
 
     protected Path mockQuiltPath(String path, boolean isDir=false) {
-        assert path.startsWith('quilt3://')
+        assert path.startsWith('quilt+s3://')
 
         def tokens = path.tokenize('/')
         def bucket = tokens[1]
@@ -107,7 +151,7 @@ abstract class QuiltSpecification extends Specification {
 
         def fs = Mock(FileSystem)
         fs.provider() >> provider
-        fs.toString() >> ('quilt3://' + bucket)
+        fs.toString() >> ('quilt+s3://' + bucket)
         def uri = GroovyMock(URI)
         uri.toString() >> path
 

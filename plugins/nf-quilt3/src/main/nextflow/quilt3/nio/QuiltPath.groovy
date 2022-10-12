@@ -51,7 +51,7 @@ public final class QuiltPath implements Path {
         this.filesystem = filesystem
         this.parsed = parsed
         this.paths = parsed.paths()
-        log.info "Creating QuiltPath[$parsed]@$filesystem"
+        log.debug "Creating QuiltPath[$parsed]@$filesystem"
     }
 
     public String bucket() {
@@ -74,13 +74,14 @@ public final class QuiltPath implements Path {
         parsed.toString()
     }
 
-    Path installPath() {
-        Path pkgPath = pkg().installPath()
+    Path localPath() {
+        Path pkgPath = pkg().packageDest()
         Paths.get(pkgPath.toUriString(), sub_paths())
     }
 
     public boolean deinstall() {
-        Path path = installPath()
+        Path path = localPath()
+        log.debug "QuiltPath.deinstall: $path"
         return Files.deleteIfExists(path)
     }
 
@@ -100,7 +101,7 @@ public final class QuiltPath implements Path {
 
     QuiltPath getJustPackage() {
         if ( isJustPackage() ) return this
-        QuiltParser pkg_parsed = QuiltParser.ForString(parsed.toPackageString())
+        QuiltParser pkg_parsed = QuiltParser.ForBarePath(parsed.toPackageString())
         new QuiltPath(filesystem, pkg_parsed)
     }
 
@@ -117,7 +118,8 @@ public final class QuiltPath implements Path {
 
     @Override
     Path getParent() {
-        throw new UnsupportedOperationException("Operation 'getParent' is not supported by QuiltPath")
+        log.debug "${this}.getParent: ${paths}`"
+        new QuiltPath(filesystem, parsed.dropPath())
     }
 
     @Override
@@ -165,44 +167,43 @@ public final class QuiltPath implements Path {
 
     @Override
     Path normalize() {
-        throw new UnsupportedOperationException("Operation 'normalize' is not supported by QuiltPath")
-        this
+        log.debug "`normalize` should elide '..' paths"
+        return this
     }
 
     @Override
     QuiltPath resolve(Path other) {
-        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
         if( other.class != QuiltPath )
             throw new ProviderMismatchException()
 
         final that = (QuiltPath)other
         if( other.isAbsolute() )
             return that
-
+        throw new UnsupportedOperationException("Operation 'resolve'[$that] is not supported by QuiltPath[$this]")
         //new QuiltPath(filesystem, pkg_name, other.toString(), options)
     }
 
     @Override
     QuiltPath resolve(String other) {
-        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
-        //new QuiltPath(filesystem, pkg_name, other, options)
+        log.debug "$this: `resolve[$other]`"
+        new QuiltPath(filesystem, parsed.appendPath(other))
     }
 
     @Override
     Path resolveSibling(Path other) {
-        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
+        throw new UnsupportedOperationException("Operation 'resolveSibling'[$other] is not supported by QuiltPath")
         //new QuiltPath(filesystem, pkg_name, other.toString(), options)
     }
 
     @Override
     Path resolveSibling(String other) {
-        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
+        throw new UnsupportedOperationException("Operation 'resolveSibling'[$other] is not supported by QuiltPath")
         //new QuiltPath(filesystem, pkg_name, other, options)
     }
 
     @Override
     Path relativize(Path other) {
-        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
+        throw new UnsupportedOperationException("Operation 'relativize'[$other] is not supported by QuiltPath")
         //new QuiltPath(filesystem, "", file_key(), options)
     }
 

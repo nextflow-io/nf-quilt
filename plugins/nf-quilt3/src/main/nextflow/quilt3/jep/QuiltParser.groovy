@@ -46,16 +46,19 @@ class QuiltParser {
     //private final String catalog
     private final Map<String,Object> options
 
-    static public QuiltParser ForPath(String path) {
-        QuiltParser.ForString(PREFIX+path)
+    static public QuiltParser ForBarePath(String path) {
+        QuiltParser.ForUriString(PREFIX+path)
     }
 
-    static public QuiltParser ForString(String uri_string) {
+    static public QuiltParser ForUriString(String uri_string) {
         URI uri = new URI(uri_string)
         QuiltParser.ForURI(uri)
     }
 
     static public QuiltParser ForURI(URI uri) {
+        log.debug("ForURI[${uri.scheme}] for $uri")
+        if (uri.scheme != SCHEME)
+            throw new IllegalArgumentException("Scheme[$uri] URI:${uri.scheme}] != SCHEME:${SCHEME}")
         def options = parseQuery(uri.fragment)
         String pkg = options.get(P_PKG)
         String path = options.get(P_PATH)
@@ -73,6 +76,17 @@ class QuiltParser {
         this.pkg_name = parsePkg(pkg)
         this.paths = path ? path.split(SEP) : [] as String[]
         this.options = options
+    }
+
+    QuiltParser appendPath(String tail) {
+        String path2 = [path(),tail].join(SEP)
+        new QuiltParser(bucket(), pkg_name(), path2, options)
+    }
+
+    QuiltParser dropPath() {
+        String path2 = paths[0..-2].join(SEP)
+        log.debug("dropPath: ${path()} -> ${path2}")
+        new QuiltParser(bucket(), pkg_name(), path2, options)
     }
 
     String bucket() {
@@ -128,10 +142,10 @@ class QuiltParser {
     String toPackageString() {
         String str = "${bucket()}"
         if ( pkg_name ) {
-            String pkg = "#$pkg_name"
+            String pkg = pkg_name
             if ( hash ) { pkg += "@$hash" }
             if ( tag ) { pkg += ":$tag" }
-            str += "package=${pkg.replace('/','%2f')}"
+            str += "#package=${pkg.replace('/','%2f')}"
         }
         str
     }
@@ -139,12 +153,13 @@ class QuiltParser {
     String toString() {
         String str = toPackageString()
         if (! hasPath() ) return str
-        str += ( pkg_name) ? "&" : "#"
+        str += ( pkg_name ) ? "&" : "#"
         str += "path=${path().replace('/','%2f')}"
     }
 
     String toUriString() {
         PREFIX + toString()
     }
+
 
 }

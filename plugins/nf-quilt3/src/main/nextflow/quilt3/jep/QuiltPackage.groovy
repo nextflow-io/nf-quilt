@@ -74,11 +74,11 @@ class QuiltPackage {
     }
 
     String key_dest() {
-        "--dest ${installPath()}"
+        "--dest ${packageDest()}"
     }
 
     String key_dir() {
-        "--dir ${installPath()}"
+        "--dir ${packageDest()}"
     }
 
 
@@ -91,7 +91,7 @@ class QuiltPackage {
     }
 
     String key_path() {
-        "--path=${installPath()}"
+        "--path=${packageDest()}"
     }
 
     String key_registry() {
@@ -102,7 +102,7 @@ class QuiltPackage {
         def command = ['quilt3']
         command.addAll(args)
         def cmd = command.join(" ")
-        log.info "call `${cmd}`"
+        log.debug "call `${cmd}`"
 
         ProcessBuilder pb = new ProcessBuilder('bash','-c', cmd)
         pb.redirectErrorStream(true);
@@ -110,27 +110,27 @@ class QuiltPackage {
         Process p = pb.start();
         String result = new String(p.getInputStream().readAllBytes());
         int exitCode = p.waitFor();
-        log.info "`call.exitCode` ${exitCode}: ${result}"
+        log.debug "`call.exitCode` ${exitCode}: ${result}"
     }
 
     // usage: quilt3 install [-h] [--registry REGISTRY] [--top-hash TOP_HASH] [--dest DEST] [--dest-registry DEST_REGISTRY] [--path PATH] name
     Path install() {
         call('install',pkg_name,key_registry(),key_dest())
         installed = true
-        installPath()
+        packageDest()
     }
 
     boolean isInstalled() {
         installed
     }
 
-    Path installPath() {
+    Path packageDest() {
         folder
     }
 
     // https://docs.quiltdata.com/v/version-5.0.x/examples/gitlike#install-a-package
     boolean push() {
-        log.info "`push` $this"
+        log.debug "`push` $this"
         try {
             call('push',pkg_name,key_dir(),key_registry(),key_msg("update"))
         }

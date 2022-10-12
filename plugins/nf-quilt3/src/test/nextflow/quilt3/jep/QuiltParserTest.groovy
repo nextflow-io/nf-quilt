@@ -23,9 +23,16 @@ class QuiltParserTest extends QuiltSpecification {
         QuiltParser.PREFIX == 'quilt+s3://'
     }
 
+    def 'should error on invalid schema'() {
+        when:
+        def parser = QuiltParser.ForUriString("quilt3://bucket/")
+        then:
+        thrown(IllegalArgumentException)
+    }
+
     def 'should decompose URIs'() {
         when:
-        def parser = QuiltParser.ForPath(uri)
+        def parser = QuiltParser.ForBarePath(bare)
         then:
         parser.bucket() == bucket
         parser.pkg_name() == pkg
@@ -34,7 +41,7 @@ class QuiltParserTest extends QuiltSpecification {
         parser.tag() == tag
 
         where:
-        uri                                  | bucket   | query                    | pkg    | path | hash | tag
+        bare                                 | bucket   | query                    | pkg    | path | hash | tag
         'bucket'                             | 'bucket' | null                     | null   | "" | null | null
         'BuCKet'                             | 'bucket' | null                     | null   | "" | null | null
         'b#frag'                             | 'b'      | 'frag'                   | null   | "" | null | null
