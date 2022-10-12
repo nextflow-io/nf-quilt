@@ -433,7 +433,7 @@ class QuiltNioTest extends QuiltSpecification {
         when:
         def p = Paths.get(new URI(null_url))
         def list = Files.newDirectoryStream(p).collect {
-             log.info "newDirectoryStream[$p]: $it"
+             log.debug "newDirectoryStream[$p]: $it"
              it.getFileName().toString()
         }
         then:

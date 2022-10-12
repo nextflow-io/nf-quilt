@@ -51,7 +51,7 @@ public final class QuiltPath implements Path {
         this.filesystem = filesystem
         this.parsed = parsed
         this.paths = parsed.paths()
-        log.info "Creating QuiltPath[$parsed]@$filesystem"
+        log.debug "Creating QuiltPath[$parsed]@$filesystem"
     }
 
     public String bucket() {
@@ -82,7 +82,7 @@ public final class QuiltPath implements Path {
 
     public boolean deinstall() {
         Path path = localPath()
-        log.info "QuiltPath.deinstall: $path"
+        log.debug "QuiltPath.deinstall: $path"
         return Files.delete(path)
     }
 
@@ -113,13 +113,13 @@ public final class QuiltPath implements Path {
 
     @Override
     Path getFileName() {
-        log.info "QuiltFileSystem.getFileName`[${this}]: paths=$paths"
+        log.debug "QuiltFileSystem.getFileName`[${this}]: paths=$paths"
         isJustPackage() ? this : new QuiltPath(filesystem, parsed.lastPath()) // IF DIRECTORY
     }
 
     @Override
     Path getParent() {
-        log.info "${this}.getParent: ${paths}`"
+        log.debug "${this}.getParent: ${paths}`"
         new QuiltPath(filesystem, parsed.dropPath())
     }
 
@@ -168,7 +168,7 @@ public final class QuiltPath implements Path {
 
     @Override
     Path normalize() {
-        log.info "`normalize` should elide '..' paths"
+        log.debug "`normalize` should elide '..' paths"
         return this
     }
 
@@ -186,7 +186,7 @@ public final class QuiltPath implements Path {
 
     @Override
     QuiltPath resolve(String other) {
-        log.info "$this: `resolve[$other]`"
+        log.debug "$this: `resolve[$other]`"
         new QuiltPath(filesystem, parsed.appendPath(other))
     }
 
@@ -209,7 +209,7 @@ public final class QuiltPath implements Path {
     Path relativize(Path other) {
         String base = pkg().toString()
         String file = (other instanceof QuiltPath) ? ((QuiltPath)other).localPath() : other.toString()
-        log.info "relativize[$base] in [$file]"
+        log.debug "relativize[$base] in [$file]"
         int i = file.indexOf(base)
         if (i<1) {
             throw new UnsupportedOperationException("other[$file] does not contain package[$base]")
@@ -217,9 +217,9 @@ public final class QuiltPath implements Path {
 
         String tail = file.substring(i + base.size())
         if (tail.size() > 0 && tail[0] == '/') tail = tail.substring(1) // drop "/"
-        log.info "tail[$i] -> $tail"
+        log.debug "tail[$i] -> $tail"
         QuiltParser p = new QuiltParser(parsed.bucket(), parsed.pkg_name(), tail, parsed.options)
-        log.info "QuiltParser:$p"
+        log.debug "QuiltParser:$p"
         new QuiltPath(filesystem, p)
     }
 

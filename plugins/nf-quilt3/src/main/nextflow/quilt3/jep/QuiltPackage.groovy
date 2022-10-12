@@ -55,7 +55,7 @@ class QuiltPackage {
             pkg.install()
         }
         catch (Exception e) {
-            log.info "Package `${parsed.toUriString()}` does not yet exist"
+            log.debug "Package `${parsed.toUriString()}` does not yet exist"
         }
         return pkg
     }
@@ -132,7 +132,7 @@ class QuiltPackage {
         def command = ['quilt3']
         command.addAll(args)
         def cmd = command.join(" ")
-        log.info "call `${cmd}`"
+        log.debug "call `${cmd}`"
 
         ProcessBuilder pb = new ProcessBuilder('bash','-c', cmd)
         pb.redirectErrorStream(true);
@@ -140,7 +140,7 @@ class QuiltPackage {
         Process p = pb.start();
         String result = new String(p.getInputStream().readAllBytes());
         int exitCode = p.waitFor();
-        log.info "`call.exitCode` ${exitCode}: ${result}"
+        log.debug "`call.exitCode` ${exitCode}: ${result}"
     }
 
     // usage: quilt3 install [-h] [--registry REGISTRY] [--top-hash TOP_HASH] [--dest DEST] [--dest-registry DEST_REGISTRY] [--path PATH] name
@@ -164,7 +164,7 @@ class QuiltPackage {
 
     // https://docs.quiltdata.com/v/version-5.0.x/examples/gitlike#install-a-package
     boolean push(String msg = "update", String meta = "[]") {
-        log.info "`push` $this"
+        log.debug "`push` $this"
         try {
             call('push',pkg_name,key_dir(),key_registry(),key_meta(meta),key_msg(msg))
         }

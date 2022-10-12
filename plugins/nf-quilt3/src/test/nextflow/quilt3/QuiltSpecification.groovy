@@ -83,25 +83,25 @@ abstract class QuiltSpecification extends Specification {
 
     Path createObject(Path path, String text) {
         assert path
-        log.info "Write String[$text] to '$path'"
+        log.debug "Write String[$text] to '$path'"
         Files.write(path, text.bytes)
         path.localPath()
     }
 
     boolean existsPath(String path) {
         assert url
-        log.info "Check path string exists '$path'"
+        log.debug "Check path string exists '$path'"
         Files.exists(Paths.get(path))
     }
 
     boolean existsPath(QuiltPath path) {
-        log.info "Check path object exists '$path'"
+        log.debug "Check path object exists '$path'"
         final local = path.localPath()
         existsPath(local.toString())
     }
 
     String readObject(Path path) {
-        log.info "Read String from '$path'"
+        log.debug "Read String from '$path'"
         new String(Files.readAllBytes(path))
     }
 

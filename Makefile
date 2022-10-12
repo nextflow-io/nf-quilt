@@ -28,6 +28,9 @@ run:
 sarek: compile
 	./launch.sh run nf-core/sarek -profile test,docker -plugins nf-quilt3 --outdir quilt+s3://quilt-ernest-staging#package=nf-quilt/sarek&path=.
 
+# onFilePublish.Path[quilt-ernest-staging#package=nf-quilt%2fsarek@latest&path=pipeline_info%2fexecution_trace_2022-10-13_01-16-17.txt]
+# Failed to invoke observer on file publish: nextflow.quilt3.QuiltObserver@8e3449e
+
 test-pub:
 	mkdir -p /tmp/nf-quilt
 	./launch.sh run test/publish.nf

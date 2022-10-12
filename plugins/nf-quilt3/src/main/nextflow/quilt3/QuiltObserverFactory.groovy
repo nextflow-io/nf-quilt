@@ -33,7 +33,7 @@ class QuiltObserverFactory implements TraceObserverFactory {
 
     @Override
     Collection<TraceObserver> create(Session session) {
-        log.info "`create` ${this}"
+        log.debug "`create` ${this}"
         final result = new ArrayList()
         result.add( new QuiltObserver() )
         return result

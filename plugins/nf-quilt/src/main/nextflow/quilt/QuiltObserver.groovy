@@ -113,7 +113,7 @@ class QuiltObserver implements TraceObserver {
             log.warn 'The `quilt-cli` command is required to publish Quilt packages -- See https://github.com/nextflow-io/nf-quilt for more info.'
         }
         else if( exitStatus > 0 ) {
-            log.info "quilt-cli error -- command `$cmd` -- exit status: $exitStatus\n${process.text?.indent()}"
+            log.debug "quilt-cli error -- command `$cmd` -- exit status: $exitStatus\n${process.text?.indent()}"
             log.warn "Failed to publish Quilt package"
         }
         else {

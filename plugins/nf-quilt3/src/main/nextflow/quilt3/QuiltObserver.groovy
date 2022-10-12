@@ -45,7 +45,7 @@ class QuiltObserver implements TraceObserver {
     public static void writeString(String text, QuiltPackage pkg, String filename) {
         String dir = pkg.packageDest().toString()
         def path = Paths.get(dir, filename)
-        //log.info "QuiltObserver.writeString[$path]: $text"
+        //log.debug "QuiltObserver.writeString[$path]: $text"
         Files.write(path, text.bytes)
     }
 
@@ -60,29 +60,36 @@ class QuiltObserver implements TraceObserver {
         return sdf.format(date)
     }
 
+    Set<QuiltPackage> ensurePkgs() {
+        if ( !this.pkgs ) {
+            this.pkgs = new HashSet<>()
+        }
+        this.pkgs
+    }
+
     @Override
     void onFlowCreate(Session session) {
-        log.info "`onFlowCreate` $this"
+        log.debug "`onFlowCreate` $this"
         this.session = session
         this.config = session.config
         this.quilt_config = session.config.navigate('quilt') as Map
-        this.pkgs = new HashSet<>()
+        ensurePkgs()
     }
 
     @Override
     void onFilePublish(Path path) {
-        log.info "onFilePublish.Path[$path]"
+        log.debug "onFilePublish.Path[$path]"
         if( path instanceof QuiltPath ) {
             QuiltPath qPath = (QuiltPath)path
             QuiltPackage pkg = qPath.pkg()
-            this.pkgs.add(pkg)
-            log.info "onFilePublish.QuiltPath[$qPath]: pkgs=${this.pkgs}"
+            ensurePkgs().add(pkg)
+            log.debug "onFilePublish.QuiltPath[$qPath]: pkgs=${pkgs}"
         }
     }
 
     @Override
     void onFlowComplete() {
-        log.info "`onFlowComplete` ${this.pkgs}"
+        log.debug "`onFlowComplete` ${pkgs}"
         // publish pkgs to repository
         this.pkgs.each { pkg -> publish(pkg) }
     }
@@ -111,7 +118,7 @@ ${meta['workflow']['stats']['processes']}
         String text = readme(meta,msg)
         writeString(text, pkg, 'README.md')
         def rc = pkg.push(msg,JsonOutput.toJson(meta))
-        log.info "$rc: pushed package $msg"
+        log.debug "$rc: pushed package $msg"
     }
 
     private static String[] bigKeys = [
@@ -119,24 +126,24 @@ ${meta['workflow']['stats']['processes']}
     ]
 
      void clearOffset(Map period) {
-        log.info "clearOffset[]"
-        log.info "$period"
+        log.debug "clearOffset[]"
+        log.debug "$period"
 
         Map offset = period['offset']
-        log.info "offset:$offset"
+        log.debug "offset:$offset"
         offset.remove('availableZoneIds')
     }
 
     Map getMetadata() {
         // TODO: Write out config files
         Map cf = config
-        //log.info "cf:${cf}"
+        //log.debug "cf:${cf}"
         Map params = session.getParams()
         Map wf = session.getWorkflowMetadata().toMap()
         bigKeys.each { k -> wf[k] = "${wf[k]}" }
         //clearOffset(wf.get('complete') as Map)
         //clearOffset(wf['start'] as Map)
-        log.info "wf:${wf['runName']}"
+        log.debug "wf:${wf['runName']}"
         [config: cf, params: params, workflow: wf]
     }
 }
