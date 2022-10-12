@@ -41,13 +41,13 @@ class QuiltParserTest extends QuiltSpecification {
         parser.tag() == tag
 
         where:
-        bare                                 | bucket   | query                    | pkg    | path | hash | tag
-        'bucket'                             | 'bucket' | null                     | null   | "" | null | null
-        'BuCKet'                             | 'bucket' | null                     | null   | "" | null | null
-        'b#frag'                             | 'b'      | 'frag'                   | null   | "" | null | null
-        'B#package=q%2Fp'                    | 'b'      | 'package=q/p'            | 'q/p'  | "" | null | null
-        'B#package=q%2Fp@hash'               | 'b'      | 'package=q/p@hash'        | 'q/p' | "" | 'hash' | null
-        'B#package=q%2Fp:tag&path=a%2Fb'     | 'b'      | 'package=q/p:tag&path=a/b'| 'q/p' | 'a/b'| null | 'tag'
+        bare                                 | bucket   | query                    | pkg    | path | hash     | tag
+        'bucket'                             | 'bucket' | null                     | null   | "" | 'latest'   | null
+        'BuCKet'                             | 'bucket' | null                     | null   | "" | 'latest'   | null
+        'b#frag'                             | 'b'      | 'frag'                   | null   | "" | 'latest'   | null
+        'B#package=q%2Fp'                    | 'b'      | 'package=q/p'            | 'q/p'  | "" | 'latest'   | null
+        'B#package=q%2Fp@hash'               | 'b'      | 'package=q/p@hash'        | 'q/p' | "" | 'hash'     | null
+        'B#package=q%2Fp:tag&path=a%2Fb'     | 'b'      | 'package=q/p:tag&path=a/b'| 'q/p' | 'a/b'| 'latest' | 'tag'
     }
 
 }

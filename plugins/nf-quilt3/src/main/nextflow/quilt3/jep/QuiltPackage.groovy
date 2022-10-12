@@ -37,23 +37,24 @@ import java.lang.ProcessBuilder
 class QuiltPackage {
     private static final Map<String,QuiltPackage> packages = [:]
     private static final String installPrefix = "QuiltPackage"
-    public static final Path installParent = Files.createTempDirectory(installPrefix)
+    public static final Path installRoot = Files.createTempDirectory(installPrefix)
 
     private final String bucket
     private final String pkg_name
+    private final String hash
     private final Path folder
     private boolean installed
 
-    static public QuiltPackage ForPath(QuiltPath path) {
-        def pkgKey = path.getJustPackage().toString()
+    static public QuiltPackage ForParsed(QuiltParser parsed) {
+        def pkgKey = parsed.toPackageString()
         def pkg = packages.get(pkgKey)
         if( !pkg ) {
-            pkg = new QuiltPackage(path.bucket(), path.pkg_name())
+            pkg = new QuiltPackage(parsed)
             try {
                 pkg.install()
             }
             catch (Exception e) {
-                log.debug "Package `$path` does not yet exist"
+                log.debug "Package `${parsed.toUriString()}` does not yet exist"
             }
             packages[pkgKey] = pkg
         }
@@ -77,10 +78,11 @@ class QuiltPackage {
         new SimpleDateFormat('yyyy-MM-dd').format(dateObj)
     }
 
-    QuiltPackage(String bucket, String pkg_name) {
-        this.bucket = bucket
-        this.pkg_name = pkg_name
-        this.folder = Paths.get(installParent.toString(), this.toString())
+    QuiltPackage(QuiltParser parsed) {
+        this.bucket = parsed.bucket()
+        this.pkg_name = parsed.pkg_name()
+        this.hash = parsed.hash()
+        this.folder = Paths.get(installRoot.toString(), this.toString())
         this.setup()
     }
 
@@ -106,8 +108,12 @@ class QuiltPackage {
         "--force true"
     }
 
+    String key_hash() {
+        "--top-hash $hash"
+    }
+
     String key_msg(prefix="") {
-        "--message ${prefix}@${today()}"
+        "--message 'nf-quilt3:${prefix}@${today()}'"
     }
 
     String key_path() {

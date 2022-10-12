@@ -22,6 +22,7 @@ import nextflow.quilt3.nio.QuiltPath
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.nio.file.PathMatcher
 
 import groovy.json.JsonOutput
@@ -39,18 +40,26 @@ import nextflow.trace.TraceObserver
 @Slf4j
 @CompileStatic
 class QuiltObserver implements TraceObserver {
+    public static String DEFAULT_METADATA_FILENAME='quilt_metadata.json'
+
+    public static void writeString(String text, QuiltPackage pkg, String filename) {
+        String dir = pkg.packageDest().toString()
+        def path = Paths.get(dir, filename)
+        log.info "QuiltObserver.writeString[$path]: $text"
+        Files.write(path, text.bytes)
+    }
 
     private Session session
-
     private Map config
-
+    private Map quilt_config
     private Set<QuiltPackage> pkgs
 
     @Override
     void onFlowCreate(Session session) {
         log.debug "`onFlowCreate` $this"
         this.session = session
-        this.config = session.config.navigate('quilt') as Map
+        this.config = session.config
+        this.quilt_config = session.config.navigate('quilt') as Map
         this.pkgs = new HashSet<>()
     }
 
@@ -67,13 +76,24 @@ class QuiltObserver implements TraceObserver {
 
     @Override
     void onFlowComplete() {
-        log.debug "`onFlowComplete` ${this.pkgs}"
-        // make sure there are packages to publish
-        if( this.pkgs.isEmpty() ) {
-            return
-        }
-
+        log.info "`onFlowComplete` ${this.pkgs}"
         // publish pkgs to repository
-        this.pkgs.each { pkg -> pkg.push() }
+        this.pkgs.each { pkg -> publish(pkg) }
     }
+
+    void publish(QuiltPackage pkg) {
+        String filename = DEFAULT_METADATA_FILENAME // (quilt_config.get('metadata_file') || as String
+        String json = getMetadataJSON()
+        writeString(json, pkg, filename)
+        pkg.push()
+    }
+
+    String getMetadataJSON() {
+        String config = JsonOutput.toJson(config)
+        //String workflow = JsonOutput.toJson(session.getWorkflowMetadata())
+        //String params = JsonOutput.toJson(session.getParams())
+        def metadata = [config: config]//, workflow: workflow, params: params]
+        JsonOutput.toJson(metadata)
+    }
+
 }

@@ -142,7 +142,7 @@ public final class QuiltFileSystem extends FileSystem {
 
     @Override
     QuiltPath getPath(String root, String... more) {
-        log.info "QuiltFileSystem.getPath`[${root}]: $more"
+        log.debug "QuiltFileSystem.getPath`[${root}]: $more"
 
         QuiltParser p = QuiltParser.ForBarePath(root)
         new QuiltPath(this, p)

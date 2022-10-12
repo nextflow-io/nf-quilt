@@ -234,7 +234,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     QuiltPath getPath(URI uri) {
         QuiltParser parsed = QuiltParser.ForURI(uri)
-        log.info "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
+        log.debug "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
         final fs = getFileSystem0(parsed.bucket(),true)
         new QuiltPath(fs, parsed)
     }
@@ -308,8 +308,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     DirectoryStream<Path> newDirectoryStream(Path obj, DirectoryStream.Filter<? super Path> filter) throws IOException {
         final qPath = asQuiltPath(obj)
-        log.info "Creating `newDirectoryStream`: ${qPath}"
         final dirPath = qPath.localPath()
+        log.debug "QuiltFileSystemProvider.newDirectoryStream[${qPath.file_key()}]: ${qPath} <- ${dirPath}"
+        // REWRITE to iterate over children under ORIGINAL URL
         Files.newDirectoryStream(dirPath, filter)
     }
 
