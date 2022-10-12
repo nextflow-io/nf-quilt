@@ -27,7 +27,7 @@ import groovy.util.logging.Slf4j
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
+import java.util.stream.Collectors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.lang.ProcessBuilder
@@ -60,6 +60,18 @@ class QuiltPackage {
         return pkg
     }
 
+    static protected boolean deleteDirectory(Path rootPath) {
+        if (!Files.exists(rootPath)) return false
+        try {
+            final List<Path> pathsToDelete = Files.walk(rootPath).sorted(Comparator.reverseOrder()).collect(Collectors.toList())
+            for(Path path : pathsToDelete) {
+                Files.deleteIfExists(path);
+            }
+        }
+        catch (java.nio.file.NoSuchFileException e) { }
+        return true
+    }
+
     static public String today() {
         Date dateObj =  new Date()
         new SimpleDateFormat('yyyy-MM-dd').format(dateObj)
@@ -69,6 +81,14 @@ class QuiltPackage {
         this.bucket = bucket
         this.pkg_name = pkg_name
         this.folder = Paths.get(installParent.toString(), this.toString())
+        this.setup()
+    }
+
+    void reset() {
+        deleteDirectory(this.folder)
+    }
+
+    void setup() {
         Files.createDirectories(this.folder)
         this.installed = false
     }

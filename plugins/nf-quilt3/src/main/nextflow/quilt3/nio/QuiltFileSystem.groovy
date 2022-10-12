@@ -53,7 +53,7 @@ import nextflow.quilt3.jep.QuiltParser
 @CompileStatic
 public final class QuiltFileSystem extends FileSystem {
 
-    public final String bucket;
+    protected final String bucket;
     protected final QuiltFileSystemProvider provider
 
     public QuiltFileSystem(String bucket, QuiltFileSystemProvider provider) {
@@ -142,8 +142,10 @@ public final class QuiltFileSystem extends FileSystem {
 
     @Override
     QuiltPath getPath(String root, String... more) {
-        log.debug "QuiltFileSystem.getPath`[${root}]: $more"
-        throw new UnsupportedOperationException("Operation 'getPath' is not supported by QuiltFileSystem")
+        log.info "QuiltFileSystem.getPath`[${root}]: $more"
+
+        QuiltParser p = QuiltParser.ForBarePath(root)
+        new QuiltPath(this, p)
     }
 
     protected String toUriString(Path path) {

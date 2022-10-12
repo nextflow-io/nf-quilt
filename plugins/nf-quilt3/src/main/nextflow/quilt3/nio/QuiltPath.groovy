@@ -82,7 +82,7 @@ public final class QuiltPath implements Path {
     public boolean deinstall() {
         Path path = localPath()
         log.debug "QuiltPath.deinstall: $path"
-        return Files.deleteIfExists(path)
+        return Files.delete(path)
     }
 
     @Override
@@ -112,8 +112,8 @@ public final class QuiltPath implements Path {
 
     @Override
     Path getFileName() {
-        throw new UnsupportedOperationException("Operation 'getFileName' is not supported by QuiltPath")
-        isJustPackage() ? null : this
+        log.info "QuiltFileSystem.getFileName`[${this}]: paths=$paths"
+        isJustPackage() ? this : new QuiltPath(filesystem, parsed.lastPath()) // IF DIRECTORY
     }
 
     @Override
@@ -201,10 +201,25 @@ public final class QuiltPath implements Path {
         //new QuiltPath(filesystem, pkg_name, other, options)
     }
 
+// Oct-12 06:46:17.554 [Actor Thread 5] DEBUG nextflow.file.FilePorter - Unable to determine stage file integrity: source=quilt-example#package=examples%2fhurdat; target=/Users/quilt/Documents/GitHub/nf-quilt/work/stage/84/946926f92c10a0acd210d79b3b9edd
+// Operation 'relativize'[/var/folders/rr/hp1w0hxd07lgq1y8k9dmnrwr0000gq/T/QuiltPackage2346698145953900107/quilt_example_examples_hurdat/scripts/build.py] is not supported by QuiltPath
+
     @Override
     Path relativize(Path other) {
-        throw new UnsupportedOperationException("Operation 'relativize'[$other] is not supported by QuiltPath")
-        //new QuiltPath(filesystem, "", file_key(), options)
+        String base = pkg().toString()
+        String file = (other instanceof QuiltPath) ? ((QuiltPath)other).localPath() : other.toString()
+        log.info "relativize[$base] in [$file]"
+        int i = file.indexOf(base)
+        if (i<1) {
+            throw new UnsupportedOperationException("other[$file] does not contain package[$base]")
+        }
+
+        String tail = file.substring(i + base.size())
+        if (tail.size() > 0 && tail[0] == '/') tail = tail.substring(1) // drop "/"
+        log.info "tail[$i] -> $tail"
+        QuiltParser p = new QuiltParser(parsed.bucket(), parsed.pkg_name(), tail, parsed.options)
+        log.info "QuiltParser:$p"
+        new QuiltPath(filesystem, p)
     }
 
     @Override

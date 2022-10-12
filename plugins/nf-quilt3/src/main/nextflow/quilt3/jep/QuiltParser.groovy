@@ -71,7 +71,7 @@ class QuiltParser {
         queryParams.collectEntries { param -> param.split('=').collect { URLDecoder.decode(it) }}
     }
 
-    QuiltParser(String bucket, String pkg, String path, Map<String,Object> options) {
+    QuiltParser(String bucket, String pkg, String path, Map<String,Object> options = [:]) {
         this.bucket = bucket
         this.pkg_name = parsePkg(pkg)
         this.paths = path ? path.split(SEP) : [] as String[]
@@ -86,6 +86,12 @@ class QuiltParser {
     QuiltParser dropPath() {
         String path2 = paths[0..-2].join(SEP)
         log.debug("dropPath: ${path()} -> ${path2}")
+        new QuiltParser(bucket(), pkg_name(), path2, options)
+    }
+
+    QuiltParser lastPath() {
+        String path2 = paths.size() > 0 ? paths[-1] : path()
+        log.debug("lastPath: ${path()} -> ${path2}")
         new QuiltParser(bucket(), pkg_name(), path2, options)
     }
 
