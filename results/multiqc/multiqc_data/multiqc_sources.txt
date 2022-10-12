@@ -1,0 +1,12 @@
+Module	Section	Sample Name	Source
+FastQC (raw)	all_sections	test-test_L1_1	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/2/test-test_L1_1_fastqc.zip
+FastQC (raw)	all_sections	test-test_L1_2	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/3/test-test_L1_2_fastqc.zip
+GATK4 MarkDuplicates	DuplicationMetrics	test	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/4/test.md.metrics
+Samtools Flagstat	stats	test.recal.cram	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/11/test.recal.cram.stats
+Samtools Flagstat	stats	test.md.cram	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/5/test.md.cram.stats
+Mosdepth	genome_results	test.recal	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/10/test.recal.mosdepth.region.dist.txt
+Mosdepth	genome_results	test.md	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/6/test.md.mosdepth.region.dist.txt
+GATK4 BQSR	base_recalibrator	test.recal.table	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/8/test.recal.table
+Bcftools	stats	test.strelka.variants	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/15/test.strelka.variants.bcftools_stats.txt
+Vcftools	all_sections	TsTv by counts	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/13/test.strelka.variants.TsTv.count
+Vcftools	all_sections	TsTv by quality	/Users/quilt/Documents/GitHub/nf-quilt/work/a0/8c927d7ee2479e58e819e34d10fa82/12/test.strelka.variants.TsTv.qual

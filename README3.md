@@ -94,7 +94,7 @@ Follow these steps to package, upload and publish the plugin:
 
 2. Use the following command to package and create a release for your plugin on GitHub:
     ```bash
-    ./gradlew :plugins:nf-hello:upload
+    ./gradlew :plugins:nf-quilt3:upload
     ```
 
 3. Create a pull request against [nextflow-io/plugins](https://github.com/nextflow-io/plugins/blob/main/plugins.json) to make the plugin accessible to Nextflow.

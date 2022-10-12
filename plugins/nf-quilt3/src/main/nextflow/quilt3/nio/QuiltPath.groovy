@@ -51,7 +51,7 @@ public final class QuiltPath implements Path {
         this.filesystem = filesystem
         this.parsed = parsed
         this.paths = parsed.paths()
-        log.debug "Creating QuiltPath[$parsed]@$filesystem"
+        log.info "Creating QuiltPath[$parsed]@$filesystem"
     }
 
     public String bucket() {
@@ -81,7 +81,7 @@ public final class QuiltPath implements Path {
 
     public boolean deinstall() {
         Path path = localPath()
-        log.debug "QuiltPath.deinstall: $path"
+        log.info "QuiltPath.deinstall: $path"
         return Files.delete(path)
     }
 
@@ -118,7 +118,7 @@ public final class QuiltPath implements Path {
 
     @Override
     Path getParent() {
-        log.debug "${this}.getParent: ${paths}`"
+        log.info "${this}.getParent: ${paths}`"
         new QuiltPath(filesystem, parsed.dropPath())
     }
 
@@ -167,7 +167,7 @@ public final class QuiltPath implements Path {
 
     @Override
     Path normalize() {
-        log.debug "`normalize` should elide '..' paths"
+        log.info "`normalize` should elide '..' paths"
         return this
     }
 
@@ -185,7 +185,7 @@ public final class QuiltPath implements Path {
 
     @Override
     QuiltPath resolve(String other) {
-        log.debug "$this: `resolve[$other]`"
+        log.info "$this: `resolve[$other]`"
         new QuiltPath(filesystem, parsed.appendPath(other))
     }
 

@@ -56,7 +56,7 @@ class QuiltParser {
     }
 
     static public QuiltParser ForURI(URI uri) {
-        log.debug("ForURI[${uri.scheme}] for $uri")
+        log.info("ForURI[${uri.scheme}] for $uri")
         if (uri.scheme != SCHEME)
             throw new IllegalArgumentException("Scheme[$uri] URI:${uri.scheme}] != SCHEME:${SCHEME}")
         def options = parseQuery(uri.fragment)
@@ -86,13 +86,13 @@ class QuiltParser {
 
     QuiltParser dropPath() {
         String path2 = paths[0..-2].join(SEP)
-        log.debug("dropPath: ${path()} -> ${path2}")
+        log.info("dropPath: ${path()} -> ${path2}")
         new QuiltParser(bucket(), pkg_name(), path2, options)
     }
 
     QuiltParser lastPath() {
         String path2 = paths.size() > 0 ? paths[-1] : path()
-        log.debug("lastPath: ${path()} -> ${path2}")
+        log.info("lastPath: ${path()} -> ${path2}")
         new QuiltParser(bucket(), pkg_name(), path2, options)
     }
 

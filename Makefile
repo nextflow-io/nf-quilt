@@ -25,6 +25,9 @@ check3: compile
 run:
 	./launch.sh run nextflow-io/hello -plugins nf-quilt,nf-quilt3
 
+sarek:
+	./launch.sh run nf-core/sarek -profile test,docker -plugins nf-quilt3 --outdir quilt+s3://quilt-ernest-staging/nf-quilt/sarek
+
 test-pub:
 	mkdir -p /tmp/nf-quilt
 	./launch.sh run test/publish.nf

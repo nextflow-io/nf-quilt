@@ -1,0 +1,2 @@
+Sample	0.0	1.0
+test.strelka.variants.TsTv.count	nan	nan

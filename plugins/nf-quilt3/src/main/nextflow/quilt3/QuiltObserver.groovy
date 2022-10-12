@@ -45,7 +45,7 @@ class QuiltObserver implements TraceObserver {
     public static void writeString(String text, QuiltPackage pkg, String filename) {
         String dir = pkg.packageDest().toString()
         def path = Paths.get(dir, filename)
-        log.info "QuiltObserver.writeString[$path]: $text"
+        //log.info "QuiltObserver.writeString[$path]: $text"
         Files.write(path, text.bytes)
     }
 
@@ -56,7 +56,7 @@ class QuiltObserver implements TraceObserver {
 
     @Override
     void onFlowCreate(Session session) {
-        log.debug "`onFlowCreate` $this"
+        log.info "`onFlowCreate` $this"
         this.session = session
         this.config = session.config
         this.quilt_config = session.config.navigate('quilt') as Map
@@ -65,12 +65,12 @@ class QuiltObserver implements TraceObserver {
 
     @Override
     void onFilePublish(Path path) {
-        log.debug "onFilePublish.Path[$path]"
+        log.info "onFilePublish.Path[$path]"
         if( path instanceof QuiltPath ) {
             QuiltPath qPath = (QuiltPath)path
             QuiltPackage pkg = qPath.pkg()
             this.pkgs.add(pkg)
-            log.debug "onFilePublish.QuiltPath[$qPath]: pkgs=${this.pkgs}"
+            log.info "onFilePublish.QuiltPath[$qPath]: pkgs=${this.pkgs}"
         }
     }
 
@@ -85,14 +85,26 @@ class QuiltObserver implements TraceObserver {
         String filename = DEFAULT_METADATA_FILENAME // (quilt_config.get('metadata_file') || as String
         String json = getMetadataJSON()
         writeString(json, pkg, filename)
-        pkg.push()
+        def rc = pkg.push()
+        log.info "$rc: pushed package $pkg"
     }
 
+    static String[] bigKeys = [
+        'nextflow','commandLine','scriptFile','projectDir','homeDir','workDir','launchDir','manifest','configFiles'
+    ]
     String getMetadataJSON() {
-        String config = JsonOutput.toJson(config)
-        //String workflow = JsonOutput.toJson(session.getWorkflowMetadata())
+        def cf = config
+        cf.remove('availableZoneIds')
+        //log.info "$cf" //JsonOutput.toJson
+        def params = session.getParams()
+        //log.info "$params" //JsonOutput.toJson
+        def workflow = session.getWorkflowMetadata().toMap()
+        bigKeys.each { k -> workflow[k] = "${workflow[k]}" }
+        // embed config files
+        log.info "$workflow" //JsonOutput.toJson
+        log.info "${workflow['runName']}"
         //String params = JsonOutput.toJson(session.getParams())
-        def metadata = [config: config]//, workflow: workflow, params: params]
+        def metadata = [config: cf, workflow: workflow, params: params]
         JsonOutput.toJson(metadata)
     }
 

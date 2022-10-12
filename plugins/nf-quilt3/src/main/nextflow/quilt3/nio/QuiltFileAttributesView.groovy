@@ -34,7 +34,7 @@ class QuiltFileAttributesView implements BasicFileAttributeView {
     private final QuiltFileAttributes target;
 
     QuiltFileAttributesView(QuiltFileAttributes target) {
-        log.debug "QuiltFileAttributesView: $target"
+        log.info "QuiltFileAttributesView: $target"
         this.target = target;
     }
 

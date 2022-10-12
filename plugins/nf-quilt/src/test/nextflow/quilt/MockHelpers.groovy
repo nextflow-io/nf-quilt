@@ -165,7 +165,7 @@ class MockTaskHandler extends TaskHandler {
 
     @Override
     void submit() {
-        log.debug ">> launching mock task: ${task}"
+        log.info ">> launching mock task: ${task}"
         if( task.type == ScriptType.SCRIPTLET ) {
             task.workDir = Paths.get('.').complete()
             task.stdout = task.script

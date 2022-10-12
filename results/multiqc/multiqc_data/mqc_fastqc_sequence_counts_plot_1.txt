@@ -1,0 +1,3 @@
+Sample	Unique Reads	Duplicate Reads
+test-test_L1_1	262010.0	4726.0
+test-test_L1_2	264086.0	2650.0
