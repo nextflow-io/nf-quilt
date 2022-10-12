@@ -224,7 +224,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     @Override
     QuiltPath getPath(URI uri) {
         QuiltParser parsed = QuiltParser.ForURI(uri)
-        log.info "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
+        log.info "QuiltFileSystemProvider.getPath`[${uri}]: parsed=$parsed"
         final fs = getFileSystem0(parsed.quiltIDS(),true)
         new QuiltPath(fs, parsed)
     }

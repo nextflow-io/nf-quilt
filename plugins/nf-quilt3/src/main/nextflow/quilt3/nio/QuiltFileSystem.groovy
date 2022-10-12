@@ -60,6 +60,11 @@ public final class QuiltFileSystem extends FileSystem {
       this.provider = provider;
     }
 
+    @Override
+    String toString() {
+        "QuiltFileSystem:${quiltIDS}"
+    }
+
     void copy(QuiltPath source, QuiltPath target) {
       throw new UnsupportedOperationException("NOT Implemented 'QuiltFileSystem.copy' `$source` -> `$target`")
     }

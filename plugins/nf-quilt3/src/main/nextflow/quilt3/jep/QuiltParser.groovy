@@ -34,13 +34,14 @@ class QuiltParser {
     public static final String SCHEME = 'quilt+s3'
     public static final String SEP = '/'
     public static final String PREFIX = SCHEME+'://'
+    public static final int MIN_SIZE = 2
 
     public static final String P_PKG = 'package'
     public static final String P_PATH = 'path'
 
     private final String bucket
     private final String pkg_name
-    private final String[] paths
+    private String[] paths
     private String hash
     private String tag
     //private final String catalog
@@ -74,9 +75,34 @@ class QuiltParser {
     QuiltParser(String bucket, String pkg, String path, Map<String,Object> options = [:]) {
         this.bucket = bucket
         this.hash = "latest"
-        this.pkg_name = parsePkg(pkg)
         this.paths = path ? path.split(SEP) : [] as String[]
+        this.pkg_name = parsePkg(pkg)
         this.options = options
+    }
+
+    String parsePkg(String pkg) {
+        if (! pkg) return null
+        if (! pkg.contains('/')) {
+            log.error("Invalid package[$pkg]")
+        }
+        if (pkg.contains('@')) {
+            def split = pkg.split('@')
+            this.hash = split[1]
+            return split[0]
+        }
+        if (pkg.contains(':')) {
+            def split = pkg.split(':')
+            this.tag = split[1]
+            return split[0]
+        }
+        String[] split = pkg.split(SEP)
+        if (split.size() > MIN_SIZE) {
+            String[] head = split[0..1]
+            String[] tail = split[2..-1]
+            pkg = head.join(SEP)
+            this.paths += tail
+        }
+        pkg
     }
 
     QuiltParser appendPath(String tail) {
@@ -134,24 +160,6 @@ class QuiltParser {
 
     String options(String key) {
         options ? options.get(key) : null
-    }
-
-    String parsePkg(String pkg) {
-        if (! pkg) return null
-        if (! pkg.contains('/')) {
-            log.error("Invalid package[$pkg]")
-        }
-        if (pkg.contains('@')) {
-            def split = pkg.split('@')
-            this.hash = split[1]
-            return split[0]
-        }
-        if (pkg.contains(':')) {
-            def split = pkg.split(':')
-            this.tag = split[1]
-            return split[0]
-        }
-        pkg
     }
 
     String toPackageString() {
