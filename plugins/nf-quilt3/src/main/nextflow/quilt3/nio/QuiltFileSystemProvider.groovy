@@ -236,29 +236,9 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         QuiltParser parsed = QuiltParser.ForURI(uri)
         log.info "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
         final fs = getFileSystem0(parsed.bucket(),true)
-        getPath(fs, uri.path, uri.query)
+        new QuiltPath(fs, parsed)
     }
 
-    /**
-     * Get a {@link QuiltPath} from an object path string
-     *
-     * @param path A path in the form {@code containerName/blobName}
-     * @return A {@link QuiltPath} object
-     */
-    QuiltPath getPath(QuiltFileSystem fs, String abspath, String query) {
-        log.debug("${fs}.getPath: abspath=$abspath query=$query")
-        final opts = query ? parseQuery(query) : null
-        try {
-            final path = abspath.substring(1)
-            final pkg_split = path.indexOf('/', path.indexOf("/") + 1)
-            final String pkg_name = (pkg_split==-1) ? path : path.substring(0,pkg_split)
-            final String file_key = (pkg_split==-1) ? null : path.substring(pkg_split+1)
-            return new QuiltPath(fs, pkg_name, file_key, opts)
-        }
-        catch (Exception e) {
-            return new QuiltPath(fs, "", abspath, opts)
-        }
-    }
 
     static private FileSystemProvider provider( Path path ) {
         path.getFileSystem().provider()
@@ -316,7 +296,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     DirectoryStream<Path> newDirectoryStream(Path obj, DirectoryStream.Filter<? super Path> filter) throws IOException {
         log.info "Creating `newDirectoryStream`: ${obj}"
         final qPath = asQuiltPath(obj)
-        if (!qPath.isPackage())
+        if (!qPath.isJustPackage())
             throw new NotDirectoryException(qPath.toString());
 
         final dirPath = qPath.installPath()

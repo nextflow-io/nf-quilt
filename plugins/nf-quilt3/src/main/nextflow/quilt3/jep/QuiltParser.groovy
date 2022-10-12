@@ -95,12 +95,23 @@ class QuiltParser {
         paths.join(SEP)
     }
 
+    String[] paths() {
+        paths
+    }
+
     boolean hasPath() {
         paths.size() > 0
     }
 
+    String options(String key) {
+        options ? options.get(key) : null
+    }
+
     String parsePkg(String pkg) {
         if (! pkg) return null
+        if (! pkg.contains('/')) {
+            log.error("Invalid package[$pkg]")
+        }
         if (pkg.contains('@')) {
             def split = pkg.split('@')
             this.hash = split[1]
@@ -111,20 +122,25 @@ class QuiltParser {
             this.tag = split[1]
             return split[0]
         }
-        return pkg
+        pkg
     }
 
-    String toString() {
-        String str = "${bucket()}#"
+    String toPackageString() {
+        String str = "${bucket()}"
         if ( pkg_name ) {
-            String pkg = pkg_name
+            String pkg = "#$pkg_name"
             if ( hash ) { pkg += "@$hash" }
             if ( tag ) { pkg += ":$tag" }
             str += "package=${pkg.replace('/','%2f')}"
-            if ( hasPath() ) { str += "&"}
         }
-        if ( hasPath() ) { str += "path=${path().replace('/','%2f')}"}
         str
+    }
+
+    String toString() {
+        String str = toPackageString()
+        if (! hasPath() ) return str
+        str += ( pkg_name) ? "&" : "#"
+        str += "path=${path().replace('/','%2f')}"
     }
 
     String toUriString() {

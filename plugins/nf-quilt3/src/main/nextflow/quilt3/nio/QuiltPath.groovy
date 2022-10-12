@@ -33,6 +33,7 @@ import groovy.util.logging.Slf4j
 import nextflow.Global
 import nextflow.Session
 import nextflow.quilt3.QuiltOpts
+import nextflow.quilt3.jep.QuiltParser
 /**
  * Implements Path interface for Quilt storage
  *
@@ -42,60 +43,45 @@ import nextflow.quilt3.QuiltOpts
 @Slf4j
 @CompileStatic
 public final class QuiltPath implements Path {
-    public static final String SEP = '/'
-
     private final QuiltFileSystem filesystem
-    private final String pkg_name
-    private final String[] sub_paths
-    private final String hash
-    private final String tag
-    private final String catalog
-    private final Map<String,Object> options
+    private final QuiltParser parsed
+    private final String[] paths
 
-    public QuiltPath(QuiltFileSystem filesystem, String pkg_name="", String sub_path = null, Map<String,Object> options = [:]) {
-        if ( pkg_name.contains(':')) {
-            throw new IllegalArgumentException("Invalid `pkg_name`: $pkg_name")
-        }
+    public QuiltPath(QuiltFileSystem filesystem, QuiltParser parsed) {
         this.filesystem = filesystem
-        this.pkg_name = pkg_name
-        this.sub_paths = sub_path ? sub_path.split(SEP) : new String[0]
-        if ( options ) {
-            this.options = options
-            this.hash = options.get('hash')
-            this.tag = options.get('tag')
-            this.catalog = options.get('catalog')
-        }
-        log.info "Creating QuiltPath[$this]: pkg=$pkg_name"
+        this.parsed = parsed
+        this.paths = parsed.paths()
+        log.info "Creating QuiltPath[$parsed]@$filesystem"
     }
 
     public String bucket() {
-        return filesystem.bucket
+        filesystem ? filesystem.bucket : null
     }
 
     public String pkg_name() {
-        return pkg_name
+        parsed.pkg_name()
+    }
+
+    public String sub_paths() {
+        parsed.path()
     }
 
     public QuiltPackage pkg() {
-        return isAbsolute() ? QuiltPackage.ForPath(this) : null
+        isAbsolute() ? QuiltPackage.ForPath(this) : null
     }
 
     public String file_key() {
-        return sub_paths.join(SEP)
+        parsed.toString()
     }
 
     Path installPath() {
         Path pkgPath = pkg().installPath()
-        Paths.get(pkgPath.toUriString(), file_key())
+        Paths.get(pkgPath.toUriString(), sub_paths())
     }
 
     public boolean deinstall() {
         Path path = installPath()
         return Files.deleteIfExists(path)
-    }
-
-    public Object option(key) {
-        return options ? options[key] : null
     }
 
     @Override
@@ -105,46 +91,51 @@ public final class QuiltPath implements Path {
 
     @Override
     boolean isAbsolute() {
-        pkg_name != ""
+        filesystem && pkg_name() != ""
     }
 
-    boolean isPackage() {
-        getNameCount() == 0
+    boolean isJustPackage() {
+        !parsed.hasPath()
     }
 
-    QuiltPath getPackage() {
-        isPackage() ? this : new QuiltPath(filesystem, pkg_name)
+    QuiltPath getJustPackage() {
+        if ( isJustPackage() ) return this
+        QuiltParser pkg_parsed = QuiltParser.ForString(parsed.toPackageString())
+        new QuiltPath(filesystem, pkg_parsed)
     }
 
     @Override
     Path getRoot() {
-        isAbsolute() ? getPackage() : null
+        isAbsolute() ? getJustPackage() : null
     }
 
     @Override
     Path getFileName() {
-        isPackage() ? null : this
+        throw new UnsupportedOperationException("Operation 'getFileName' is not supported by QuiltPath")
+        isJustPackage() ? null : this
     }
 
     @Override
     Path getParent() {
-        getPackage()
+        throw new UnsupportedOperationException("Operation 'getParent' is not supported by QuiltPath")
     }
 
     @Override
     int getNameCount() {
-        sub_paths.size()
+        paths.size()
     }
 
     @Override
     Path getName(int index) {
-        new QuiltPath(filesystem, pkg_name, sub_paths[0,index], options)
+        throw new UnsupportedOperationException("Operation 'getName' is not supported by QuiltPath")
+        //new QuiltPath(filesystem, pkg_name, sub_paths[0,index], options)
     }
 
     @Override
     Path subpath(int beginIndex, int endIndex) {
-        final sub = sub_paths[beginIndex,endIndex].join(SEP)
-        new QuiltPath(filesystem, pkg_name, sub, options)
+        throw new UnsupportedOperationException("Operation 'subpath' is not supported by QuiltPath")
+        //final sub = sub_paths[beginIndex,endIndex].join(SEP)
+        //new QuiltPath(filesystem, pkg_name, sub, options)
     }
 
     @Override
@@ -154,7 +145,7 @@ public final class QuiltPath implements Path {
 
     @Override
     boolean startsWith(String other) {
-        startsWith(other)
+        toString().startsWith(other)
     }
 
     @Override
@@ -164,16 +155,23 @@ public final class QuiltPath implements Path {
 
     @Override
     boolean endsWith(String other) {
-        endsWith(other)
+        toString().endsWith(other)
+    }
+
+    @Override
+    int compareTo(Path other) {
+        return toString() <=> other.toString()
     }
 
     @Override
     Path normalize() {
+        throw new UnsupportedOperationException("Operation 'normalize' is not supported by QuiltPath")
         this
     }
 
     @Override
     QuiltPath resolve(Path other) {
+        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
         if( other.class != QuiltPath )
             throw new ProviderMismatchException()
 
@@ -181,38 +179,40 @@ public final class QuiltPath implements Path {
         if( other.isAbsolute() )
             return that
 
-        new QuiltPath(filesystem, pkg_name, other.toString(), options)
+        //new QuiltPath(filesystem, pkg_name, other.toString(), options)
     }
 
     @Override
     QuiltPath resolve(String other) {
-        new QuiltPath(filesystem, pkg_name, other, options)
+        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
+        //new QuiltPath(filesystem, pkg_name, other, options)
     }
 
     @Override
     Path resolveSibling(Path other) {
-      new QuiltPath(filesystem, pkg_name, other.toString(), options)
+        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
+        //new QuiltPath(filesystem, pkg_name, other.toString(), options)
     }
 
     @Override
     Path resolveSibling(String other) {
-      new QuiltPath(filesystem, pkg_name, other, options)
+        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
+        //new QuiltPath(filesystem, pkg_name, other, options)
     }
 
     @Override
     Path relativize(Path other) {
-        return this
-        new QuiltPath(filesystem, "", file_key(), options)
+        throw new UnsupportedOperationException("Operation 'resolve' is not supported by QuiltPath")
+        //new QuiltPath(filesystem, "", file_key(), options)
     }
 
     @Override
     String toString() {
-        toUriString().replace(QuiltParser.PREFIX,"")
+        parsed.toString()
     }
 
     String toUriString() {
-        QuiltPathFactory factory = new QuiltPathFactory()
-        factory.toUriString(this)
+        parsed.toUriString()
     }
 
     @Override
@@ -228,7 +228,7 @@ public final class QuiltPath implements Path {
 
     @Override
     Path toRealPath(LinkOption... options) throws IOException {
-        return toAbsolutePath()
+        throw new UnsupportedOperationException("Operation 'toRealPath' is not supported by QuiltPath")
     }
 
     @Override
@@ -251,8 +251,4 @@ public final class QuiltPath implements Path {
       throw new UnsupportedOperationException("Operation 'iterator' is not supported by QuiltPath")
     }
 
-    @Override
-    int compareTo(Path other) {
-        return toString() <=> other.toString()
-    }
 }

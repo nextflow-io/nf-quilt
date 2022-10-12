@@ -36,6 +36,7 @@ import groovy.util.logging.Slf4j
 import nextflow.Global
 import nextflow.Session
 import nextflow.quilt3.QuiltOpts
+import nextflow.quilt3.jep.QuiltParser
 /**
  * Implements FileSystem interface for Quilt registries
  * Each bucket is a FileSystem
@@ -91,7 +92,7 @@ public final class QuiltFileSystem extends FileSystem {
 
     @Override
     String getSeparator() {
-        return QuiltPath.SEP
+        return QuiltParser.SEP
     }
 
     QuiltFileAttributesView getFileAttributeView(QuiltPath path) {
@@ -141,28 +142,7 @@ public final class QuiltFileSystem extends FileSystem {
     @Override
     QuiltPath getPath(String root, String... more) {
         log.info "QuiltFileSystem.getPath`[${root}]: $more"
-        final String tail = more ? more.join(QuiltPath.SEP) : null
-        if (root[0] == '/') {
-            if (!(root =~ /^\/${bucket}/)) {
-                root = "/${bucket}${root}"
-            }
-        }
-        if (root =~ /^\/?${bucket}/ ) {
-            if ( root =~ /^\/?${bucket}\/?$/ )
-                return new QuiltPath(this)
-            try {
-                Matcher pattern = root =~ /${bucket}\/([_a-zA-Z0-9]+\/[_a-zA-Z0-9]+)/
-                String[] results = (String[])pattern[0]
-                final String pkg = results[1]
-                log.info "QuiltFileSystem.getPath.pkg`: $pkg"
-                return new QuiltPath(this, pkg, tail)
-            }
-            catch (Exception e) {
-                log.error "Invalid package found[${root}] $e"
-                return null
-            }
-
-        }
+        throw new UnsupportedOperationException("Operation 'getPath' is not supported by QuiltFileSystem")
     }
 
     protected String toUriString(Path path) {
