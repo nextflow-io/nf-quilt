@@ -24,6 +24,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.PathMatcher
+import java.text.SimpleDateFormat
 
 import groovy.json.JsonOutput
 import groovy.transform.CompileStatic
@@ -31,6 +32,7 @@ import groovy.util.logging.Slf4j
 import nextflow.Global
 import nextflow.Session
 import nextflow.trace.TraceObserver
+
 
 /**
  * Plugin observer of workflow events
@@ -40,8 +42,6 @@ import nextflow.trace.TraceObserver
 @Slf4j
 @CompileStatic
 class QuiltObserver implements TraceObserver {
-    public static String DEFAULT_METADATA_FILENAME='quilt_metadata.json'
-
     public static void writeString(String text, QuiltPackage pkg, String filename) {
         String dir = pkg.packageDest().toString()
         def path = Paths.get(dir, filename)
@@ -53,6 +53,12 @@ class QuiltObserver implements TraceObserver {
     private Map config
     private Map quilt_config
     private Set<QuiltPackage> pkgs
+
+    static String now(){
+        def date = new Date()
+        def sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        return sdf.format(date)
+    }
 
     @Override
     void onFlowCreate(Session session) {
@@ -81,31 +87,56 @@ class QuiltObserver implements TraceObserver {
         this.pkgs.each { pkg -> publish(pkg) }
     }
 
-    void publish(QuiltPackage pkg) {
-        String filename = DEFAULT_METADATA_FILENAME // (quilt_config.get('metadata_file') || as String
-        String json = getMetadataJSON()
-        writeString(json, pkg, filename)
-        def rc = pkg.push()
-        log.info "$rc: pushed package $pkg"
+    String readme(Map meta, String msg) {
+"""
+# ${now()}
+## $msg
+### params
+${meta['params']}
+
+# workflow
+## scriptFile: ${meta['workflow']['scriptFile']}
+### sessionId: ${meta['workflow']['sessionId']}
+- start: ${meta['workflow']['start']}
+- complete: ${meta['workflow']['complete']}
+
+### processes
+${meta['workflow']['stats']['processes']}
+"""
     }
 
-    static String[] bigKeys = [
+    void publish(QuiltPackage pkg) {
+        def meta = getMetadata()
+        String msg = "${meta['config']['runName']}: ${meta['workflow']['commandLine']}"
+        String text = readme(meta,msg)
+        writeString(text, pkg, 'README.md')
+        def rc = pkg.push(msg,JsonOutput.toJson(meta))
+        log.info "$rc: pushed package $msg"
+    }
+
+    private static String[] bigKeys = [
         'nextflow','commandLine','scriptFile','projectDir','homeDir','workDir','launchDir','manifest','configFiles'
     ]
-    String getMetadataJSON() {
-        def cf = config
-        cf.remove('availableZoneIds')
-        //log.info "$cf" //JsonOutput.toJson
-        def params = session.getParams()
-        //log.info "$params" //JsonOutput.toJson
-        def workflow = session.getWorkflowMetadata().toMap()
-        bigKeys.each { k -> workflow[k] = "${workflow[k]}" }
-        // embed config files
-        log.info "$workflow" //JsonOutput.toJson
-        log.info "${workflow['runName']}"
-        //String params = JsonOutput.toJson(session.getParams())
-        def metadata = [config: cf, workflow: workflow, params: params]
-        JsonOutput.toJson(metadata)
+
+     void clearOffset(Map period) {
+        log.info "clearOffset[]"
+        log.info "$period"
+
+        Map offset = period['offset']
+        log.info "offset:$offset"
+        offset.remove('availableZoneIds')
     }
 
+    Map getMetadata() {
+        // TODO: Write out config files
+        Map cf = config
+        //log.info "cf:${cf}"
+        Map params = session.getParams()
+        Map wf = session.getWorkflowMetadata().toMap()
+        bigKeys.each { k -> wf[k] = "${wf[k]}" }
+        //clearOffset(wf.get('complete') as Map)
+        //clearOffset(wf['start'] as Map)
+        log.info "wf:${wf['runName']}"
+        [config: cf, params: params, workflow: wf]
+    }
 }

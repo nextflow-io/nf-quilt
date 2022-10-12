@@ -112,8 +112,8 @@ class QuiltPackage {
         "--top-hash $hash"
     }
 
-    String key_meta(String meta) {
-        "--meta $meta"
+    String key_meta(String meta="[]") {
+        "--meta '$meta'"
     }
 
     String key_msg(prefix="") {
@@ -144,8 +144,12 @@ class QuiltPackage {
     }
 
     // usage: quilt3 install [-h] [--registry REGISTRY] [--top-hash TOP_HASH] [--dest DEST] [--dest-registry DEST_REGISTRY] [--path PATH] name
-    Path install(String meta="[]") {
-        call('install',pkg_name,key_registry(),key_hash(),key_dest(),key_meta(meta))
+    Path install() {
+        if ('latest' == hash) {
+            call('install',pkg_name,key_registry(),key_dest())
+        } else {
+            call('install',pkg_name,key_registry(),key_hash(),key_dest())
+        }
         installed = true
         packageDest()
     }
@@ -159,10 +163,10 @@ class QuiltPackage {
     }
 
     // https://docs.quiltdata.com/v/version-5.0.x/examples/gitlike#install-a-package
-    boolean push() {
+    boolean push(String msg = "update", String meta = "[]") {
         log.info "`push` $this"
         try {
-            call('push',pkg_name,key_dir(),key_registry(),key_msg("update"))
+            call('push',pkg_name,key_dir(),key_registry(),key_meta(meta),key_msg(msg))
         }
         catch (Exception e) {
             log.error "Failed `push` ${this}: ${e}"
