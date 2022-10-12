@@ -36,18 +36,14 @@ You must also specify a package name containing exactly one '/', such as `instru
 Finally, run your Nextflow pipeline with your config file, setting that URL as your output directory, .e.g.:
 
 ```
-nextflow run my/ingest --outdir quilt+s3://raw-bucket/instrument/experiment
+nextflow run my/ingest --outdir quilt+s3://raw-bucket#package=experiment/instrument
 ```
 
-You can then use that package as input to future jobs, e.g.:
+In the future, you will be able to use that package as input to future jobs, e.g.:
 
 ```
-nextflow run my/analysis --indir quilt+s3://raw-bucket/instrument/experiment --outdir quilt+s3://prod-bucket/analysis/experiment
+nextflow run my/analysis --indir quilt+s3://raw-bucket#package=experiment/instrument --outdir quilt+s3://prod-bucket#package=experiment/analysis
 ```
-
-## Additional Features (TBD)
-
-
 
 # Development
 
@@ -81,7 +77,7 @@ make check
 
 ## Package, upload and publish
 
-The project should be hosted in a GitHub repository whose name should match the name of the plugin, that is the name of the directory in the `plugins` folder (e.g. `nf-hello`).
+The project should be hosted in a GitHub repository whose name should match the name of the plugin, that is the name of the directory in the `plugins` folder (e.g. `nf-quilt3`).
 
 Follow these steps to package, upload and publish the plugin:
 
