@@ -118,7 +118,7 @@ ${meta['workflow']['stats']['processes']}
         String text = readme(meta,msg)
         writeString(text, pkg, 'README.md')
         def rc = pkg.push(msg,JsonOutput.toJson(meta))
-        log.debug "$rc: pushed package $msg"
+        log.info "$rc: pushed package $msg"
     }
 
     private static String[] bigKeys = [
@@ -137,10 +137,12 @@ ${meta['workflow']['stats']['processes']}
     Map getMetadata() {
         // TODO: Write out config files
         Map cf = config
-        //log.debug "cf:${cf}"
+        log.debug "cf:${cf}"
         Map params = session.getParams()
+        log.debug "params:${params}"
         Map wf = session.getWorkflowMetadata().toMap()
         bigKeys.each { k -> wf[k] = "${wf[k]}" }
+        log.debug "wf:${wf}"
         //clearOffset(wf.get('complete') as Map)
         //clearOffset(wf['start'] as Map)
         log.debug "wf:${wf['runName']}"

@@ -1,55 +1,99 @@
-# nf-quilt
+# nf-quilt3
 
-Nextflow plugin for interacting with [Quilt](https://quiltdata.com/) packages.
+Nextflow plugin for interacting with [Quilt](https://quiltdata.com/) packages as a FileSystem
 
-`nf-quilt` currently allows you to publish the outputs of a workflow run as a Quilt package. WHen you launch a pipeline with the `nf-quilt` plugin, it will publish a Quilt package upon workflow completion that contains output files published to S3.
+`nf-quilt3` is a plugin developed by Quilt Data that enables you read and write directly to Quilt packages using `quilt` URLs
+wherever you currently use `s3`, `az` or `gs` URLs.
+
+See [./README-nf-quilt.md] for the original `nf-quilt` plugin that assumes S3 URLs
 
 ## Getting Started
 
-To add the `nf-quilt` plugin to your workflow, you need Nextflow 22.04 (or later) and Python 3.7 (or later).
+To add the `nf-quilt3` plugin to your workflow, you need Nextflow 22.09 (or later) and Python 3.9 (or later).
 
-Install the [quilt-cli](./quilt-cli) Python package:
+
+### Quilt Configuration
+
+This plugin uses the `quilt3` CLI to call the Quilt API.
+You must install the `quilt3` module and ensure the CLI is in your path:
+
 ```bash
-pip3 install git+https://github.com/nextflow-io/nf-quilt.git#subdirectory=quilt-cli
+pip3 install quilt3
+which quilt3 #e.g., /usr/local/bin/quilt3
 ```
 
-Add the following snippet to your `nextflow.config` to enable the plugin:
+### Reading and Writing Quilt URLs
+
+Next, create a Quilt URL for the S3 bucket where you want to store (and eventually read) your results.
+You must also specify a package name containing exactly one '/', such as `instrument/experiment`
+Finally, run your Nextflow pipeline with your config file, setting that URL as your output directory, .e.g.:
+
+```
+nextflow run nf-core/sarek -profile test,docker -plugins nf-quilt3 --outdir quilt+s3://raw-bucket#package=nf-quilt/sarek&path=.
+```
+### Pipeline Configuration
+
+Note that you won't need the '-plugins' option if you have modify your nextflow.config
+
+Add the following snippet to your `nextflow.config` to enable the plugin (or just that one 'id' if you already have other plugins):
 ```groovy
 plugins {
-    id 'nf-quilt'
+    id 'nf-quilt3'
 }
 ```
 
-Configure the plugin with the `quilt` config scope in your `nextflow.config`. At a minimum, you should specify the package name and registry. You can also specify a list of paths to include in the Quilt package; by default, the plugin will include all output files that were published to S3.
+In the future, you will be able to use that package as input to future jobs, e.g.:
 
-_TIP: It is recommended that you use `publishDir` to select outputs for the Quilt package, rather than `quilt.paths`, so that the Quilt package matches the actual workflow outputs._
-
-Here's an example based on `nf-core/rnaseq`:
-```groovy
-quilt {
-  packageName = 'genomes/yeast'
-  registry = 's3://seqera-quilt'
-  message = 'My commit message'
-  meta = [pipeline: 'nf-core/rnaseq']
-  force = false
-}
+```
+nextflow run my/analysis --indir quilt+s3://raw-bucket#package=experiment/instrument --outdir quilt+s3://prod-bucket#package=experiment/analysis
 ```
 
-Finally, run your Nextflow pipeline with your config file. You do not need to modify your pipeline script in order to use the `nf-quilt` plugin. As long as your pipeline publishes the desired output files to S3, the plugin will automatically publish a Quilt package based on your configuration settings.
+# Development
 
-## Reference
+_Based on [nf-hello](https://github.com/nextflow-io/nf-hello)_
 
-The plugin exposes a new `quilt` config scope which supports the following options:
+## Unit testing
 
-| Config option 	  | Description 	          |
-|---	              |---	                      |
-| `quilt.packageName` | Name of package, in the USER/PKG format
-| `quilt.registry`    | Registry where to create the new package
-| `quilt.message`     | The commit message for the new package
-| `quilt.meta`        | Package-level metadata in the form of key-value pairs
-| `quilt.force`       | Skip the parent top hash check and create a new revision even if your local state is behind the remote registry
-| `quilt.paths`       | List of published files (can be path or glob) to include in the package
+Run the following command in the project root directory (ie. where the file `settings.gradle` is located):
 
-## Development
+```bash
+make check
+```
 
-Refer to the [nf-hello](https://github.com/nextflow-io/nf-hello) README for instructions on how to build, test, and publish Nextflow plugins.
+## Testing and debugging
+
+1. Clone the Nextflow repository into a sibling directory, .e.g:
+
+    ```bash
+    git clone --depth 1 https://github.com/nextflow-io/nextflow ../nextflow
+    ```
+
+2. Compile the plugin alongside the Nextflow code:
+    ```bash
+    make compile
+    ```
+
+3. Run Nextflow with the plugin, using `./launch.sh` as a drop-in replacement for the `nextflow` command, and adding the option `-plugins nf-quilt3` to load the plugin:
+    ```bash
+    ./launch.sh run nextflow-io/hello -plugins nf-quilt3
+    ```
+
+## Package, upload and publish
+
+The project should be hosted in a GitHub repository whose name should match the name of the plugin, that is the name of the directory in the `plugins` folder (e.g. `nf-quilt3`).
+
+Follow these steps to package, upload and publish the plugin:
+
+1. Create a file named `gradle.properties` in the project root containing the following attributes (this file should not be committed to Git):
+
+   * `github_organization`: the GitHub organisation where the plugin repository is hosted.
+   * `github_username`: The GitHub username granting access to the plugin repository.
+   * `github_access_token`: The GitHub access token required to upload and commit changes to the plugin repository.
+   * `github_commit_email`: The email address associated with your GitHub account.
+
+2. Use the following command to package and create a release for your plugin on GitHub:
+    ```bash
+    ./gradlew :plugins:nf-quilt3:upload
+    ```
+
+3. Create a pull request against [nextflow-io/plugins](https://github.com/nextflow-io/plugins/blob/main/plugins.json) to make the plugin accessible to Nextflow.
