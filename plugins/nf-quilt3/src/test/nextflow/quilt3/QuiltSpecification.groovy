@@ -76,17 +76,20 @@ abstract class QuiltSpecification extends Specification {
     }
 
     Path createObject(String url, String text) {
+        assert url
         def path = Paths.get(new URI(url))
         createObject(path, text)
     }
 
     Path createObject(Path path, String text) {
+        assert path
         log.info "Write String[$text] to '$path'"
         Files.write(path, text.bytes)
         path.localPath()
     }
 
     boolean existsPath(String path) {
+        assert url
         log.info "Check path string exists '$path'"
         Files.exists(Paths.get(path))
     }

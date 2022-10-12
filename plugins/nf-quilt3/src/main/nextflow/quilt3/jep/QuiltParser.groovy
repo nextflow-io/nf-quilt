@@ -96,6 +96,14 @@ class QuiltParser {
         new QuiltParser(bucket(), pkg_name(), path2, options)
     }
 
+    QuiltID quiltID() {
+        QuiltID.Fetch(bucket(), pkg_name())
+    }
+
+    String quiltIDS() {
+        quiltID().toString()
+    }
+
     String bucket() {
         bucket ? bucket.toLowerCase() : null
     }

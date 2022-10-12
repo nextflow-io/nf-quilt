@@ -55,7 +55,7 @@ public final class QuiltPath implements Path {
     }
 
     public String bucket() {
-        filesystem ? filesystem.bucket : null
+        parsed.bucket()
     }
 
     public String pkg_name() {
@@ -76,6 +76,7 @@ public final class QuiltPath implements Path {
 
     Path localPath() {
         Path pkgPath = pkg().packageDest()
+        assert pkgPath
         Paths.get(pkgPath.toUriString(), sub_paths())
     }
 

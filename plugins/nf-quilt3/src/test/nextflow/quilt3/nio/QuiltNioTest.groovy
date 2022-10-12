@@ -37,6 +37,17 @@ class QuiltNioTest extends QuiltSpecification {
     static String url = pkg_path('folder/file-name.txt')
     static String TEXT = "Hello world!"
 
+    def 'should create valid URIs' () {
+        given:
+        def uri = new URI(url)
+        expect:
+        uri
+        when:
+        def path = Paths.get(uri)
+        then:
+        path
+    }
+
     def 'should write a file' () {
         given:
         def path = Paths.get(new URI(url))

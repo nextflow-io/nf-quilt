@@ -89,17 +89,10 @@ class QuiltFileSystemProvider extends FileSystemProvider {
         return (QuiltFileSystem)fs
     }
 
-    static private Map<String,Object> parseQuery(String query) {
-        final queryParams = query?.split('&') // safe operator for urls without query params
-        queryParams.collectEntries { param -> param.split('=').collect { URLDecoder.decode(it) }}
-    }
-    // def map = url.query.split('&').inject([:])
-    // {map, kv-> def (key, value) = kv.split('=').toList(); map[key] = value != null ? URLDecoder.decode(value) : null; map }
-
-    protected String getBucketName(URI uri) {
+    protected String getQuiltIDS(URI uri) {
         assert uri
         QuiltParser parsed = QuiltParser.ForURI(uri)
-        return parsed.bucket()
+        return parsed.quiltID().toString()
     }
 
     /**
@@ -142,13 +135,13 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     QuiltFileSystem newFileSystem(URI uri, Map<String, ?> config) throws IOException {
-        final bucket = getBucketName(uri)
-        newFileSystem(bucket,config)
+        final quiltIDS = getQuiltIDS(uri)
+        newFileSystem(quiltIDS,config)
     }
 
-    QuiltFileSystem newFileSystem(String bucket, Map<String, ?> env) throws IOException {
-        final fs = new QuiltFileSystem(bucket, this)
-        fileSystems[bucket] = fs
+    QuiltFileSystem newFileSystem(String quiltIDS, Map<String, ?> env) throws IOException {
+        final fs = new QuiltFileSystem(quiltIDS, this)
+        fileSystems[quiltIDS] = fs
         fs
     }
 
@@ -188,21 +181,18 @@ class QuiltFileSystemProvider extends FileSystemProvider {
      */
     @Override
     FileSystem getFileSystem(URI uri) {
-        final bucket = getBucketName(uri)
-        getFileSystem0(bucket,false)
+        final quiltIDS = getQuiltIDS(uri)
+        getFileSystem0(quiltIDS,false)
     }
 
-    protected QuiltFileSystem getFileSystem0(String bucket, boolean canCreate) {
+    protected QuiltFileSystem getFileSystem0(String quiltIDS, boolean canCreate) {
 
-        def fs = fileSystems.get(bucket)
-        if( !fs ) {
-            if( canCreate )
-                fs = newFileSystem(bucket, env)
-            else
-                throw new FileSystemNotFoundException("Missing Quilt storage blob file system for bucket: `$bucket`")
-        }
-
-        return fs
+        def fs = fileSystems.get(quiltIDS)
+        if( fs ) return fs
+        if( canCreate )
+            return newFileSystem(quiltIDS, env)
+        else
+            throw new FileSystemNotFoundException("Missing Quilt file system for quiltIDS: `$quiltIDS`")
     }
 
     /**
@@ -235,7 +225,7 @@ class QuiltFileSystemProvider extends FileSystemProvider {
     QuiltPath getPath(URI uri) {
         QuiltParser parsed = QuiltParser.ForURI(uri)
         log.info "QuiltFileSystemProvider.getPath`[${uri}] $parsed"
-        final fs = getFileSystem0(parsed.bucket(),true)
+        final fs = getFileSystem0(parsed.quiltIDS(),true)
         new QuiltPath(fs, parsed)
     }
 
@@ -251,12 +241,10 @@ class QuiltFileSystemProvider extends FileSystemProvider {
 
 
     /**
-    * Open a file for reading or writing. To read receiver-pays buckets, specify the
-    * BlobSourceOption.userProject option.
-    *
+    * Open a file for reading or writing.
+
     * @param path: the path to the file to open or create
-    * @param options: options specifying how the file is opened, e.g. StandardOpenOption.WRITE or
-    *     BlobSourceOption.userProject
+    * @param options: options specifying how the file is opened, e.g. StandardOpenOption.WRITE
     * @param attrs: (not supported, values will be ignored)
     * @return
     * @throws IOException

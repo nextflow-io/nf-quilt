@@ -39,8 +39,7 @@ import nextflow.quilt3.QuiltOpts
 import nextflow.quilt3.jep.QuiltParser
 /**
  * Implements FileSystem interface for Quilt registries
- * Each bucket is a FileSystem
- * Every package is a Root Directory
+ * Each bucket/package pair (QuiltID) is a FileSystem
  * Every logical key is a Path
  *
  * @author Ernest Prabhakar <ernest@quiltdata.io>
@@ -53,11 +52,11 @@ import nextflow.quilt3.jep.QuiltParser
 @CompileStatic
 public final class QuiltFileSystem extends FileSystem {
 
-    protected final String bucket;
+    protected final String quiltIDS;
     protected final QuiltFileSystemProvider provider
 
-    public QuiltFileSystem(String bucket, QuiltFileSystemProvider provider) {
-      this.bucket = bucket;
+    public QuiltFileSystem(String quiltIDS, QuiltFileSystemProvider provider) {
+      this.quiltIDS = quiltIDS;
       this.provider = provider;
     }
 

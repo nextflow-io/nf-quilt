@@ -48,15 +48,14 @@ class QuiltPackage {
     static public QuiltPackage ForParsed(QuiltParser parsed) {
         def pkgKey = parsed.toPackageString()
         def pkg = packages.get(pkgKey)
-        if( !pkg ) {
-            pkg = new QuiltPackage(parsed)
-            try {
-                pkg.install()
-            }
-            catch (Exception e) {
-                log.info "Package `${parsed.toUriString()}` does not yet exist"
-            }
-            packages[pkgKey] = pkg
+        if( pkg ) return pkg
+        pkg = new QuiltPackage(parsed)
+        packages[pkgKey] = pkg
+        try {
+            pkg.install()
+        }
+        catch (Exception e) {
+            log.info "Package `${parsed.toUriString()}` does not yet exist"
         }
         return pkg
     }
@@ -83,6 +82,7 @@ class QuiltPackage {
         this.pkg_name = parsed.pkg_name()
         this.hash = parsed.hash()
         this.folder = Paths.get(installRoot.toString(), this.toString())
+        assert this.folder
         this.setup()
     }
 
@@ -110,6 +110,10 @@ class QuiltPackage {
 
     String key_hash() {
         "--top-hash $hash"
+    }
+
+    String key_meta(String meta) {
+        "--meta $meta"
     }
 
     String key_msg(prefix="") {
@@ -140,8 +144,8 @@ class QuiltPackage {
     }
 
     // usage: quilt3 install [-h] [--registry REGISTRY] [--top-hash TOP_HASH] [--dest DEST] [--dest-registry DEST_REGISTRY] [--path PATH] name
-    Path install() {
-        call('install',pkg_name,key_registry(),key_dest())
+    Path install(String meta="[]") {
+        call('install',pkg_name,key_registry(),key_hash(),key_dest(),key_meta(meta))
         installed = true
         packageDest()
     }
