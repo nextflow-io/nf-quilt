@@ -6,6 +6,7 @@
 .gradle
 .idea
 .nextflow*
+gradle.properties
 
 # Ignore Gradle build output directory
 build

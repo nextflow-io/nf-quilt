@@ -33,7 +33,7 @@ nextflow run nf-core/sarek -profile test,docker -plugins nf-quilt3 --outdir quil
 ```
 ### Pipeline Configuration
 
-Note that you won't need the '-plugins' option if you have modify your nextflow.config
+Note that you won't need the '-plugins' option if you modify `nextflow.config`
 
 Add the following snippet to your `nextflow.config` to enable the plugin (or just that one 'id' if you already have other plugins):
 ```groovy

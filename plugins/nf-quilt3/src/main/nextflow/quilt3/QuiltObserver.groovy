@@ -98,8 +98,6 @@ class QuiltObserver implements TraceObserver {
 """
 # ${now()}
 ## $msg
-### params
-${meta['params']}
 
 ## workflow
 ### scriptFile: ${meta['workflow']['scriptFile']}
@@ -107,26 +105,30 @@ ${meta['params']}
 - start: ${meta['workflow']['start']}
 - complete: ${meta['workflow']['complete']}
 
-### processes
+## processes
 ${meta['workflow']['stats']['processes']}
+
 """
     }
 
     void publish(QuiltPackage pkg) {
         String msg = pkg.toString()
         Map meta = [pkg: msg]
-        String text = "README"
+        String text = "Stub README"
+        String jsonMeta = JsonOutput.toJson(meta)
         try {
             meta = getMetadata()
             msg = "${meta['config']['runName']}: ${meta['workflow']['commandLine']}"
             text = readme(meta,msg)
+            jsonMeta = JsonOutput.toJson(meta['workflow'])
         }
         catch (Exception e) {
             log.error "publish: QuiltObserver not initialized[$e]"
         }
         writeString(text, pkg, 'README.md')
-        def rc = pkg.push(msg,JsonOutput.toJson(meta))
-        log.info "$rc: pushed package $msg"
+        writeString("$meta", pkg, 'quilt_metadata.txt')
+        def rc = pkg.push(msg,jsonMeta)
+        log.info "$rc: pushed package[$pkg] $msg"
     }
 
     private static String[] bigKeys = [
