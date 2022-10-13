@@ -1,11 +1,12 @@
+PROJECT := nf-quilt
+REPORT := ./plugins/$(PROJECT)/build/reports/tests/test/index.html
+BUCKET := quilt-ernest-staging
+PIPELINE := sarek
+QUILT_URI :=  quilt+s3://$(BUCKET)#package=$(PROJECT)/$(PIPELINE)&path=.
 
-config ?= compileClasspath
-
-ifdef module
-mm = :${module}:
-else
-mm =
-endif
+verify: compile
+	clear
+	./gradlew check || open $(REPORT)
 
 clean:
 	./gradlew clean
@@ -18,42 +19,9 @@ compile:
 check:
 	./gradlew check
 
-check3: compile
-	clear
-	./gradlew check || open file:///Users/quilt/Documents/GitHub/nf-quilt/plugins/nf-quilt3/build/reports/tests/test/index.html
 
-run:
-	./launch.sh run nextflow-io/hello -plugins nf-quilt,nf-quilt3
-
-sarek: compile
-	./launch.sh run nf-core/sarek -profile test,docker -plugins nf-quilt3 --outdir quilt+s3://quilt-ernest-staging#package=nf-quilt/sarek&path=.
-
-#	groovy.lang.MissingMethodException: No signature of method: java.lang.Integer.multiply() is applicable for argument types: (ConfigObject) values: [[:]]
-#	Possible solutions: multiply(java.lang.Character), multiply(java.lang.Number)
-#  [genomes:[:], session:[:], executor:[:], container:[:]]
-
-test-pub:
-	mkdir -p /tmp/nf-quilt
-	./launch.sh run test/publish.nf
-	ls -lR /tmp/nf-quilt
-
-test-quilt: compile
-	./launch.sh run test/quilt.nf
-
-test-unquilt: compile
-	./launch.sh run test/unquilt.nf
-
-test-local:
-	./launch.sh run test/quilt.nf --src /Users/quilt/Downloads/Packages/igv_demo --pub /Users/quilt/Downloads/Packages/test_nf22
-
-qtest: compile
-	clear
-	./launch.sh run test/publish.nf --pubdir quilt+s3://quilt-ernest-staging/nf-quilt/test-out/
-
-shell:
-	./gradlew -q --no-daemon --console=plain --init-script gradle/groovysh-init.gradle groovysh
-# https://gist.github.com/sandipchitale/6f53c646ec00752d41cddcca243d76cf
-
+$(PIPELINE): compile
+	./launch.sh run nf-core/$(PIPELINE) -profile test,docker -plugins $(PROJECT) --outdir "$(QUILT_URI)"
 #
 # Show dependencies try `make deps config=runtime`, `make deps config=google`
 #
@@ -80,8 +48,8 @@ else
 endif
 
 fast:
-	./gradlew ${mm}test --fail-fast || open file:///Users/quilt/Documents/GitHub/nf-quilt/plugins/nf-quilt3/build/reports/tests/test/index.html
-
+	./gradlew ${mm}test --fail-fast || open $(REPORT)
+	
 #
 # Upload JAR artifacts to Maven Central
 #

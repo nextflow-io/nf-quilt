@@ -66,7 +66,7 @@ abstract class QuiltSpecification extends Specification {
             }
         }
         Plugins.init(root, 'dev', manager)
-        Plugins.startIfMissing('nf-quilt3')
+        Plugins.startIfMissing('nf-quilt')
     }
 
     def cleanupSpec() {

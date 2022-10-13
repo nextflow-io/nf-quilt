@@ -117,7 +117,7 @@ class QuiltPackage {
     }
 
     String key_msg(prefix="") {
-        "--message 'nf-quilt3:${prefix}@${today()}'"
+        "--message 'nf-quilt:${prefix}@${today()}'"
     }
 
     String key_path() {
