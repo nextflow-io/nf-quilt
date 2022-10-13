@@ -1,2 +1,0 @@
-Sample	0.0	6.0	24.0	42.0
-test.strelka.variants	0.0	0.0	0.0	0.0

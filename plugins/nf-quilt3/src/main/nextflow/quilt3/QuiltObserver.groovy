@@ -113,12 +113,20 @@ ${meta['workflow']['stats']['processes']}
     }
 
     void publish(QuiltPackage pkg) {
-        def meta = getMetadata()
-        String msg = "${meta['config']['runName']}: ${meta['workflow']['commandLine']}"
-        String text = readme(meta,msg)
+        String msg = pkg.toString()
+        Map meta = [pkg: msg]
+        String text = "README"
+        try {
+            meta = getMetadata()
+            msg = "${meta['config']['runName']}: ${meta['workflow']['commandLine']}"
+            text = readme(meta,msg)
+        }
+        catch (Exception e) {
+            log.error "publish: QuiltObserver not initialized[$e]"
+        }
         writeString(text, pkg, 'README.md')
         def rc = pkg.push(msg,JsonOutput.toJson(meta))
-        log.debug "$rc: pushed package $msg"
+        log.info "$rc: pushed package $msg"
     }
 
     private static String[] bigKeys = [
@@ -134,16 +142,30 @@ ${meta['workflow']['stats']['processes']}
         offset.remove('availableZoneIds')
     }
 
+    static void printMap(Map map, String title) {
+        log.info "\n\n\n# $title"
+        map.each{
+            key, value -> print "\n## $key\n\n$value";
+        }
+    }
+
     Map getMetadata() {
         // TODO: Write out config files
         Map cf = config
-        //log.debug "cf:${cf}"
+        cf.remove('params')
+        cf.remove('session')
+        cf.remove('executor')
+        printMap(cf, "config")
         Map params = session.getParams()
+        params.remove('genomes')
+        printMap(params, "params")
         Map wf = session.getWorkflowMetadata().toMap()
         bigKeys.each { k -> wf[k] = "${wf[k]}" }
+        wf.remove('container')
+        printMap(wf, "workflow")
         //clearOffset(wf.get('complete') as Map)
         //clearOffset(wf['start'] as Map)
-        log.debug "wf:${wf['runName']}"
-        [config: cf, params: params, workflow: wf]
+        log.info "\npublishing: ${wf['runName']}"
+        [params: params, config: cf, workflow: wf]
     }
 }

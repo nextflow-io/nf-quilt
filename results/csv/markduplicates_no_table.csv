@@ -1,2 +1,0 @@
-patient,sex,status,sample,cram,crai
-test,XX,0,test,results/preprocessing/markduplicates/test/test.md.cram,results/preprocessing/markduplicates/test/test.md.cram.crai

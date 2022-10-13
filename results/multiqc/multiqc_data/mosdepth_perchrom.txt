@@ -1,3 +1,0 @@
-Sample	chr22
-test.md	9.57
-test.recal	9.57

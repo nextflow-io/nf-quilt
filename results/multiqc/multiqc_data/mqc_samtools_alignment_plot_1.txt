@@ -1,3 +1,0 @@
-Sample	Mapped	Unmapped
-test.md.cram	10081.0	523391.0
-test.recal.cram	10081.0	8547.0

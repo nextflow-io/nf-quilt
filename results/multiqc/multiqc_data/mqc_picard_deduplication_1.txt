@@ -1,2 +1,0 @@
-Sample	Unique Pairs	Unique Unpaired	Duplicate Unpaired	Unmapped
-test	1534.0	4665.0	3882.0	523391.0
