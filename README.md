@@ -50,6 +50,15 @@ The plugin exposes a new `quilt` config scope which supports the following optio
 | `quilt.force`       | Skip the parent top hash check and create a new revision even if your local state is behind the remote registry
 | `quilt.paths`       | List of published files (can be path or glob) to include in the package
 
+## Tower
+
+To use nf-quilt with Nextflow Tower, add the following lines to your pre-run script:
+```bash
+yum install python3-pip -y
+yum install git -y
+pip3 install git+https://github.com/nextflow-io/nf-quilt.git@merge-quilt-cli#subdirectory=quilt-cli
+```
+
 ## Development
 
 Refer to the [nf-hello](https://github.com/nextflow-io/nf-hello) README for instructions on how to build, test, and publish Nextflow plugins.
