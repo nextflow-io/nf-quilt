@@ -56,7 +56,7 @@ To use nf-quilt with Nextflow Tower, add the following lines to your pre-run scr
 ```bash
 yum install python3-pip -y
 yum install git -y
-pip3 install git+https://github.com/nextflow-io/nf-quilt.git@merge-quilt-cli#subdirectory=quilt-cli
+pip3 install git+https://github.com/nextflow-io/nf-quilt.git#subdirectory=quilt-cli
 ```
 
 ## Development
