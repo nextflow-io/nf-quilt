@@ -1,5 +1,7 @@
 # nf-quilt
 
+**ARCHIVED: As of version 0.3.2, the nf-quilt plugin is now maintained by Quilt at [quiltdata/nf-quilt](https://github.com/quiltdata/nf-quilt).**
+
 Nextflow plugin for interacting with [Quilt](https://quiltdata.com/) packages.
 
 `nf-quilt` currently allows you to publish the outputs of a workflow run as a Quilt package. WHen you launch a pipeline with the `nf-quilt` plugin, it will publish a Quilt package upon workflow completion that contains output files published to S3.
